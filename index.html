@@ -3,406 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Portaria - Vicon</title>
+    <title>Controle de Acesso - Portaria</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #ff0000; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-        .header { text-align: center; color: white; margin-bottom: 20px; margin-top: 20px; }
-        .header h1 { margin: 0; font-size: 50px; font-weight: bold; letter-spacing: 3px; }
-        .header p { margin: 5px 0 0; font-size: 20px; letter-spacing: 2px; text-transform: uppercase; }
-        
-        .container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 750px; margin-bottom: 20px; box-sizing: border-box; }
-        h2 { margin-top: 0; color: #333; text-align: center; margin-bottom: 20px; }
-        h3 { color: #555; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; margin-top: 15px; margin-bottom: 15px; }
-        
-        /* Estilo das Abas */
-        .abas-menu { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ccc; width: 100%; }
-        .aba-btn { flex: 1; padding: 12px; border: none; background: #e0e0e0; cursor: pointer; font-size: 16px; font-weight: bold; color: #555; transition: 0.3s; border-radius: 8px 8px 0 0; }
-        .aba-btn.ativa { background: #2c3e50; color: white; }
-        .aba-conteudo { display: none; }
-        .aba-conteudo.ativa { display: block; }
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #18bc9c;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
 
-        label { display: block; margin-bottom: 5px; color: #666; font-weight: 500; }
-        input[type="text"], select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        
-        .busca-container { display: flex; gap: 10px; margin-bottom: 15px; }
-        .busca-container input { margin-bottom: 0; flex: 1; }
-        
-        /* Container para Múltiplas Notas Fiscais */
-        .nf-wrapper { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
-        .nf-wrapper input { margin-bottom: 0; flex: 1; }
-        .btn-add-nf { background-color: #4a90e2; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 18px; }
-        .btn-add-nf:hover { background-color: #357abd; }
-        .btn-remove-nf { background-color: #d9534f; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .btn-remove-nf:hover { background-color: #c9302c; }
-        #lista-nfs { margin-bottom: 15px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--dark-color);
+        }
 
-        button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
-        .btn-busca { background-color: #4a90e2; color: white; }
-        .btn-busca:hover { background-color: #357abd; }
-        .btn-salvar { background-color: #2c3e50; color: white; width: 100%; margin-top: 10px; }
-        .btn-salvar:hover { background-color: #1a252f; }
-        .btn-saida { background-color: #e67e22; color: white; padding: 6px 12px; font-size: 13px; border-radius: 4px; }
-        .btn-saida:hover { background-color: #d35400; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-save { background-color: var(--secondary-color); }
+        .btn-save:hover { background-color: #128f76; }
         
-        /* Resultados da busca na própria página */
-        .resultado-busca { background-color: #f0f7ff; border: 1px solid #4a90e2; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #333; }
-        .resultado-busca h4 { margin: 0 0 10px 0; color: #2c3e50; }
+        .btn-report { background-color: var(--primary-color); }
+        .btn-report:hover { background-color: #1a252f; }
+
+        .btn-output { 
+            background-color: var(--danger-color); 
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .btn-output:hover { background-color: #c0392b; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:hover { background-color: #f5f5f5; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; word-break: break-all; }
-        th { background-color: #f2f2f2; color: #333; }
-        .status-patio { color: #27ae60; font-weight: bold; }
-        .status-encerrado { color: #7f8c8d; font-style: italic; }
+        .status-active { color: #27ae60; font-weight: bold; }
+        .status-closed { color: #7f8c8d; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>VICON</h1>
-        <p>Máquinas Agrícolas</p>
+<div class="container">
+    <h1>Controle de Portaria</h1>
+    
+    <div id="cadastro-form">
+        <div class="form-group">
+            <label for="tipo">Tipo de Acesso:</label>
+            <select id="tipo">
+                <option value="Visitante">Visitante</option>
+                <option value="Prestador">Prestador de Serviço</option>
+                <option value="Entrega">Entrega</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="nome">Nome Completo / Empresa:</label>
+            <input type="text" id="nome" placeholder="Ex: João Silva ou TransLog Entregas">
+        </div>
+
+        <div class="form-group">
+            <label for="documento">Documento (RG/CPF/Placa):</label>
+            <input type="text" id="documento" placeholder="Ex: 00.000.000-0 ou ABC-1234">
+        </div>
+
+        <div class="btn-container">
+            <button class="btn-save" onclick="registrarEntrada()">Registrar Entrada</button>
+            <button class="btn-report" onclick="gerarRelatorio()">Gerar Relatório</button>
+        </div>
     </div>
 
-    <div class="container">
-        <h2>Controle de Portaria</h2>
+    <h2>Movimentação Ativa</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Nome/Empresa</th>
+                <th>Doc/Placa</th>
+                <th>Entrada</th>
+                <th>Saída</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-registros">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // Inicializa a lista buscando do LocalStorage ou cria uma vazia
+    let registros = JSON.parse(localStorage.getItem('controlePortaria')) || [];
+
+    // Função para registrar uma nova entrada
+    function registrarEntrada() {
+        const tipo = document.getElementById('tipo').value;
+        const nome = document.getElementById('nome').value.trim();
+        const documento = document.getElementById('documento').value.trim();
+
+        if (nome === '' || documento === '') {
+            alert('Por favor, preencha todos os campos!');
+            return;
+        }
+
+        const agora = new Date();
+        const horaEntrada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        const novoRegistro = {
+            id: Date.now(),
+            tipo: tipo,
+            nome: nome,
+            documento: documento,
+            entrada: horaEntrada,
+            saida: '-',
+            status: 'Ativo'
+        };
+
+        registros.push(novoRegistro);
+        salvarEAtualizar();
         
-        <div class="abas-menu">
-            <button class="aba-btn ativa" id="btn-aba-portaria" onclick="mudarAba('portaria')">Portaria Geral</button>
-            <button class="aba-btn" id="btn-aba-entregas" onclick="mudarAba('entregas')">Logística (Entrega / Coleta)</button>
-        </div>
+        // Limpa os campos após salvar
+        document.getElementById('nome').value = '';
+        document.getElementById('documento').value = '';
+    }
 
-        <h3>Pesquisar Cadastro</h3>
-        <div class="busca-container">
-            <input type="text" id="campoBusca" placeholder="Digite nome, CPF, placa ou NF para buscar...">
-            <button type="button" class="btn-busca" onclick="executarBusca()">Buscar</button>
-        </div>
-        <div id="painelResultado" style="display: none;"></div>
+    // Função para registrar a saída (Visitantes, Prestadores ou Entregas)
+    function registrarSaida(id) {
+        const agora = new Date();
+        const horaSaida = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-        <!-- ABA PORTARIA GERAL -->
-        <div id="aba-portaria" class="aba-conteudo ativa">
-            <form id="formPortaria">
-                <h3>Cadastro Geral</h3>
-                <label for="tipo">Tipo de Cadastro:</label>
-                <select id="tipo" name="tipo" required>
-                    <option value="Visitante">Visitante</option>
-                    <option value="Prestador">Prestador de Serviço</option>
-                    <option value="Funcionário">Funcionário</option>
-                </select>
-
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" required>
-
-                <label for="cpf">CPF/CNPJ:</label>
-                <input type="text" id="cpf" required>
-
-                <label for="empresa">Empresa (se aplicável):</label>
-                <input type="text" id="empresa">
-
-                <label for="visitado">Quem vai visitar / Setor:</label>
-                <input type="text" id="visitado" required>
-
-                <button type="submit" class="btn-salvar">Salvar Entrada</button>
-            </form>
-        </div>
-
-        <!-- ABA LOGÍSTICA (ENTREGAS E COLETAS) -->
-        <div id="aba-entregas" class="aba-conteudo">
-            <form id="formEntregas">
-                <h3>Dados do Motorista e Veículo</h3>
-                
-                <label for="fluxo_logistica">Operação:</label>
-                <select id="fluxo_logistica" onchange="ajustarFluxoLogistica()" required>
-                    <option value="Entrega">Entrega (Possui Nota Fiscal de Entrada)</option>
-                    <option value="Coleta">Coleta / Expedição (Entra Vazio / Recebe NF na Saída)</option>
-                </select>
-
-                <label for="entregador">Nome do Motorista:</label>
-                <input type="text" id="entregador" required>
-
-                <label for="cpf_entregador">CPF do Motorista:</label>
-                <input type="text" id="cpf_entregador" required>
-
-                <label for="empresa_entrega">Empresa Transportadora:</label>
-                <input type="text" id="empresa_entrega">
-
-                <label for="placa_carro">Placa do Carro/Caminhão:</label>
-                <input type="text" id="placa_carro" required>
-
-                <label for="modelo_carro">Modelo do Veículo:</label>
-                <input type="text" id="modelo_carro">
-
-                <!-- Seção Dinâmica de NFs (Ocultada automaticamente se for Coleta) -->
-                <div id="secao-nfs">
-                    <label>Número da Nota Fiscal de Entrada:</label>
-                    <div id="lista-nfs">
-                        <div class="nf-wrapper">
-                            <input type="text" class="input-nf" placeholder="Digite o número da NF">
-                            <button type="button" class="btn-add-nf" onclick="adicionarCampoNF()">+</button>
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-salvar">Salvar Entrada da Operação</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- TABELA DE MOVIMENTAÇÃO -->
-    <div class="container" style="max-width: 900px;">
-        <h3 id="tituloRelatorio">Pessoas no Interior da Empresa</h3>
-        <table id="tabelaRelatorio">
-            <thead id="cabecalhoTabela"></thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <script>
-        let abaAtiva = 'portaria';
-
-        // Alternar entre as abas
-        function mudarAba(aba) {
-            abaAtiva = aba;
-            
-            document.querySelectorAll('.aba-btn').forEach(btn => btn.classList.remove('ativa'));
-            document.querySelectorAll('.aba-conteudo').forEach(cont => cont.classList.remove('ativa'));
-            
-            document.getElementById('painelResultado').style.display = 'none';
-            document.getElementById('campoBusca').value = '';
-
-            if(aba === 'portaria') {
-                document.getElementById('btn-aba-portaria').classList.add('ativa');
-                document.getElementById('aba-portaria').classList.add('ativa');
-                document.getElementById('tituloRelatorio').innerText = "Pessoas no Interior da Empresa";
-            } else {
-                document.getElementById('btn-aba-entregas').classList.add('ativa');
-                document.getElementById('aba-entregas').classList.add('ativa');
-                document.getElementById('tituloRelatorio').innerText = "Fluxo de Logística Ativa (Pátio)";
+        registros.forEach(registro => {
+            if (registro.id === id) {
+                registro.saida = horaSaida;
+                registro.status = 'Finalizado';
             }
-            atualizarTabela();
-        }
-
-        // Altera a obrigatoriedade da NF baseado na seleção (Entrega vs Coleta)
-        function ajustarFluxoLogistica() {
-            const fluxo = document.getElementById('fluxo_logistica').value;
-            const secaoNFs = document.getElementById('secao-nfs');
-            const primeiroInputNF = document.querySelector('.input-nf');
-
-            if (fluxo === 'Coleta') {
-                secaoNFs.style.display = 'none';
-                primeiroInputNF.removeAttribute('required');
-            } else {
-                secaoNFs.style.display = 'block';
-                primeiroInputNF.setAttribute('required', 'required');
-            }
-        }
-
-        function adicionarCampoNF() {
-            const container = document.getElementById('lista-nfs');
-            const novoBloco = document.createElement('div');
-            novoBloco.className = 'nf-wrapper';
-            novoBloco.innerHTML = `
-                <input type="text" class="input-nf" placeholder="Digite outra NF" required>
-                <button type="button" class="btn-remove-nf" onclick="removerCampoNF(this)">x</button>
-            `;
-            container.appendChild(novoBloco);
-        }
-
-        function removerCampoNF(botao) {
-            botao.parentElement.remove();
-        }
-
-        function resetarCamposNF() {
-            const container = document.getElementById('lista-nfs');
-            container.innerHTML = `
-                <div class="nf-wrapper">
-                    <input type="text" class="input-nf" placeholder="Digite o número da NF">
-                    <button type="button" class="btn-add-nf" onclick="adicionarCampoNF()">+</button>
-                </div>
-            `;
-            ajustarFluxoLogistica();
-        }
-
-        // Formatação de data e hora atual
-        function obterDataHoraAtual() {
-            const agora = new Date();
-            return agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-        }
-
-        // Dar saída no veículo (Garante inserção de NF se for Coleta)
-        function darSaidaVeiculo(index) {
-            let entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
-            let veiculo = entregas[index];
-
-            if (veiculo.operacao === 'Coleta' && (!veiculo.numero_nf || veiculo.numero_nf === '-')) {
-                const nfsExpedicao = prompt("Processo de Coleta/Expedição detectado.\nPor favor, digite os números das Notas Fiscais geradas para esta saída (separe por vírgula se houver mais de uma):");
-                
-                if (nfsExpedicao === null) return; // Cancela a operação se clicar em cancelar
-                
-                if (nfsExpedicao.trim() === "") {
-                    alert("Atenção: É necessário informar a Nota Fiscal para liberar a saída de uma Coleta!");
-                    return;
-                }
-                veiculo.numero_nf = nfsExpedicao.trim();
-            }
-
-            veiculo.status = "Concluído";
-            veiculo.hora_saida = obterDataHoraAtual();
-            
-            localStorage.setItem('vicon_entregas', JSON.stringify(entregas));
-            atualizarTabela();
-        }
-
-        // Atualizar listagem em tempo real
-        function atualizarTabela() {
-            const tbody = document.getElementById('tabelaRelatorio').querySelector('tbody');
-            const cabecalho = document.getElementById('cabecalhoTabela');
-            tbody.innerHTML = '';
-
-            if (abaAtiva === 'portaria') {
-                cabecalho.innerHTML = `<tr><th>Tipo</th><th>Nome</th><th>CPF</th><th>Quem vai Visitar</th><th>Entrada</th></tr>`;
-                const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
-                registros.forEach(r => {
-                    const linha = document.createElement('tr');
-                    linha.innerHTML = `<td>${r.tipo}</td><td>${r.nome}</td><td>${r.cpf}</td><td>${r.visitado}</td><td>${r.hora_entrada}</td>`;
-                    tbody.appendChild(linha);
-                });
-            } else {
-                cabecalho.innerHTML = `<tr><th>Operação</th><th>Motorista (Placa)</th><th>Nºs NF</th><th>Entrada</th><th>Saída</th><th>Ações</th></tr>`;
-                const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
-                
-                entregas.forEach((e, index) => {
-                    const linha = document.createElement('tr');
-                    
-                    let acaoBotao = `<span class="status-encerrado">Liberado</span>`;
-                    if (e.status === 'No Pátio') {
-                        acaoBotao = `<button type="button" class="btn-saida" onclick="darSaidaVeiculo(${index})">Dar Saída</button>`;
-                    }
-
-                    linha.innerHTML = `
-                        <td><strong>${e.operacao}</strong></td>
-                        <td>${e.entregador} <br><small>(${e.placa_carro} - ${e.modelo_carro || '-'})</small></td>
-                        <td><span style="color: blue; font-weight: bold;">${e.numero_nf || '-'}</span></td>
-                        <td>${e.hora_entrada}</td>
-                        <td>${e.hora_saida || '<span class="status-patio">No Pátio</span>'}</td>
-                        <td>${acaoBotao}</td>
-                    `;
-                    tbody.appendChild(linha);
-                });
-            }
-        }
-
-        // Cadastro da Portaria Geral
-        document.getElementById('formPortaria').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const novo = {
-                tipo: document.getElementById('tipo').value,
-                nome: document.getElementById('nome').value,
-                cpf: document.getElementById('cpf').value.trim(),
-                empresa: document.getElementById('empresa').value,
-                visitado: document.getElementById('visitado').value,
-                hora_entrada: obterDataHoraAtual()
-            };
-            let lista = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
-            lista.push(novo);
-            localStorage.setItem('vicon_portaria', JSON.stringify(lista));
-            this.reset();
-            atualizarTabela();
         });
 
-        // Cadastro de Logística (Entregas e Coletas)
-        document.getElementById('formEntregas').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const fluxo = document.getElementById('fluxo_logistica').value;
+        salvarEAtualizar();
+    }
+
+    // Salva os dados no navegador e atualiza a tela
+    function salvarEAtualizar() {
+        localStorage.setItem('controlePortaria', JSON.stringify(registros));
+        renderizarTabela();
+    }
+
+    // Desenha a tabela na tela
+    function renderizarTabela() {
+        const tabela = document.getElementById('tabela-registros');
+        tabela.innerHTML = '';
+
+        registros.forEach(registro => {
+            const tr = document.createElement('tr');
             
-            let listaNFs = [];
-            if (fluxo === 'Entrega') {
-                const inputsNF = document.querySelectorAll('.input-nf');
-                inputsNF.forEach(input => {
-                    if(input.value.trim() !== "") {
-                        listaNFs.push(input.value.trim());
-                    }
-                });
-            }
-
-            const novaEntrega = {
-                operacao: fluxo,
-                entregador: document.getElementById('entregador').value,
-                cpf: document.getElementById('cpf_entregador').value.trim(),
-                empresa_entrega: document.getElementById('empresa_entrega').value,
-                placa_carro: document.getElementById('placa_carro').value.toUpperCase().trim(),
-                modelo_carro: document.getElementById('modelo_carro').value,
-                numero_nf: fluxo === 'Entrega' ? listaNFs.join(', ') : '-',
-                hora_entrada: obterDataHoraAtual(),
-                hora_saida: '',
-                status: 'No Pátio'
-            };
-
-            let lista = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
-            lista.push(novaEntrega);
-            localStorage.setItem('vicon_entregas', JSON.stringify(lista));
-            
-            this.reset();
-            resetarCamposNF();
-            atualizarTabela();
-        });
-
-        // Executar Busca na própria tela
-        function executarBusca() {
-            const termo = document.getElementById('campoBusca').value.trim().toLowerCase();
-            const painel = document.getElementById('painelResultado');
-            
-            if(!termo) {
-                painel.innerHTML = `<div class="resultado-busca" style="border-color: red; background-color: #fff0f0;">Por favor, digite algo para pesquisar.</div>`;
-                painel.style.display = 'block';
-                return;
-            }
-
-            if (abaAtiva === 'portaria') {
-                const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
-                const r = registros.find(item => 
-                    (item.nome && item.nome.toLowerCase().includes(termo)) || 
-                    (item.cpf && item.cpf.includes(termo))
-                );
-                
-                if(r) {
-                    painel.innerHTML = `
-                        <div class="resultado-busca">
-                            <h4>✓ Registro Encontrado (Portaria Geral)</h4>
-                            <p><strong>Tipo:</strong> ${r.tipo} | <strong>Nome:</strong> ${r.nome}</p>
-                            <p><strong>CPF:</strong> ${r.cpf} | <strong>Destino/Setor:</strong> ${r.visitado}</p>
-                            <p><strong>Entrada:</strong> ${r.hora_entrada}</p>
-                            ${r.empresa ? `<p><strong>Empresa:</strong> ${r.empresa}</p>` : ''}
-                        </div>`;
-                } else {
-                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange; background-color: #fffbf0;">Nenhum visitante, funcionário ou prestador localizado.</div>`;
-                }
+            let acaoBotao = '';
+            if (registro.status === 'Ativo') {
+                acaoBotao = `<button class="btn-output" onclick="registrarSaida(${registro.id})">Dar Saída</button>`;
             } else {
-                const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
-                const e = entregas.find(item => 
-                    (item.entregador && item.entregador.toLowerCase().includes(termo)) || 
-                    (item.placa_carro && item.placa_carro.toLowerCase().includes(termo)) || 
-                    (item.cpf && item.cpf.includes(termo)) ||
-                    (item.numero_nf && item.numero_nf.toLowerCase().includes(termo))
-                );
-                
-                if(e) {
-                    painel.innerHTML = `
-                        <div class="resultado-busca">
-                            <h4>✓ Registro Encontrado (Controle Logístico)</h4>
-                            <p><strong>Operação:</strong> ${e.operacao} | <strong>Status:</strong> ${e.status}</p>
-                            <p><strong>Motorista:</strong> ${e.entregador} | <strong>CPF:</strong> ${e.cpf}</p>
-                            <p><strong>Placa:</strong> ${e.placa_carro} | <strong>Modelo:</strong> ${e.modelo_carro || '-'}</p>
-                            <p><strong>Notas Fiscais:</strong> <span style="color: blue; font-weight: bold;">${e.numero_nf}</span></p>
-                            <p><strong>Entrada:</strong> ${e.hora_entrada} | <strong>Saída:</strong> ${e.hora_saida || 'Ainda no Pátio'}</p>
-                        </div>`;
-                } else {
-                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange; background-color: #fffbf0;">Nenhuma operação de Logística localizada.</div>`;
-                }
+                acaoBotao = `<span class="status-closed">Concluído</span>`;
             }
-            painel.style.display = 'block';
+
+            tr.innerHTML = `
+                <td>${registro.tipo}</td>
+                <td>${registro.nome}</td>
+                <td>${registro.documento}</td>
+                <td>${registro.entrada}</td>
+                <td>${registro.saida}</td>
+                <td>${acaoBotao}</td>
+            `;
+            
+            tabela.appendChild(tr);
+        });
+    }
+
+    // Função para Gerar o Relatório
+    function gerarRelatorio() {
+        if (registros.length === 0) {
+            alert('Não há registros para gerar relatório.');
+            return;
         }
 
-        // Inicializar a tabela ao carregar a página
-        atualizarTabela();
-    </script>
+        let conteudoRelatorio = "=== RELATÓRIO DE PORTARIA ===\n\n";
+        registros.forEach((r, index) => {
+            conteudoRelatorio += `${index + 1}. [${r.tipo}] - Nome: ${r.nome} | Doc/Placa: ${r.documento} | Entrada: ${r.entrada} | Saída: ${r.saida} | Status: ${r.status}\n`;
+        });
+
+        // Cria um arquivo de texto para download rápido
+        const blob = new Blob([conteudoRelatorio], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'relatorio_portaria.txt';
+        link.click();
+    }
+
+    // Carrega a tabela assim que abre a página
+    window.onload = renderizarTabela;
+</script>
+
 </body>
 </html>
