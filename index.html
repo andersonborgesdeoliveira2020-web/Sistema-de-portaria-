@@ -53,8 +53,8 @@
         <h2>Controle de Portaria</h2>
         
         <div class="abas-menu">
-            <button class="aba-btn ativa" onclick="mudarAba('portaria')">Portaria Geral</button>
-            <button class="aba-btn" onclick="mudarAba('entregas')">Controle de Entregas</button>
+            <button class="aba-btn ativa" id="btn-aba-portaria" onclick="mudarAba('portaria')">Portaria Geral</button>
+            <button class="aba-btn" id="btn-aba-entregas" onclick="mudarAba('entregas')">Controle de Entregas</button>
         </div>
 
         <h3>Pesquisar Cadastro</h3>
@@ -133,17 +133,21 @@
         // Alternar entre as abas
         function mudarAba(aba) {
             abaAtiva = aba;
+            
+            // Remove a classe ativa de todas as abas e conteúdos
             document.querySelectorAll('.aba-btn').forEach(btn => btn.classList.remove('ativa'));
             document.querySelectorAll('.aba-conteudo').forEach(cont => cont.classList.remove('ativa'));
+            
+            // Limpa buscas anteriores ao trocar de aba
             document.getElementById('painelResultado').style.display = 'none';
             document.getElementById('campoBusca').value = '';
 
             if(aba === 'portaria') {
-                document.querySelector('[onclick="mudarAba(\'portaria\')"]').classList.add('ativa');
+                document.getElementById('btn-aba-portaria').classList.add('ativa');
                 document.getElementById('aba-portaria').classList.add('ativa');
                 document.getElementById('tituloRelatorio').innerText = "Pessoas no Interior da Empresa";
             } else {
-                document.querySelector('[onclick="mudarAba(\'entregas\')"]').classList.add('ativa');
+                document.getElementById('btn-aba-entregas').classList.add('ativa');
                 document.getElementById('aba-entregas').classList.add('ativa');
                 document.getElementById('tituloRelatorio').innerText = "Fluxo de Entregas Ativas";
             }
@@ -210,20 +214,24 @@
             atualizarTabela();
         });
 
-        // Executar Busca exibindo o resultado na própria tela
-        function ejecutarBusca() {
+        // Executar Busca corrigida e exibindo na tela
+        function executarBusca() {
             const termo = document.getElementById('campoBusca').value.trim().toLowerCase();
             const painel = document.getElementById('painelResultado');
             
             if(!termo) {
-                painel.innerHTML = `<div class="resultado-busca" style="border-color: red;">Por favor, digite um termo para pesquisar.</div>`;
+                painel.innerHTML = `<div class="resultado-busca" style="border-color: red; background-color: #fff0f0;">Por favor, digite algo para pesquisar.</div>`;
                 painel.style.display = 'block';
                 return;
             }
 
             if (abaAtiva === 'portaria') {
                 const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
-                const r = registros.find(item => item.nome.toLowerCase().includes(termo) || item.cpf.includes(termo));
+                // Correção aqui: garantindo que as variáveis existem antes de rodar o .includes()
+                const r = registros.find(item => 
+                    (item.nome && item.nome.toLowerCase().includes(termo)) || 
+                    (item.cpf && item.cpf.includes(termo))
+                );
                 
                 if(r) {
                     painel.innerHTML = `
@@ -234,11 +242,16 @@
                             ${r.empresa ? `<p><strong>Empresa:</strong> ${r.empresa}</p>` : ''}
                         </div>`;
                 } else {
-                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange;">Nenhum visitante, funcionário ou prestador localizado com esse termo.</div>`;
+                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange; background-color: #fffbf0;">Nenhum visitante, funcionário ou prestador localizado.</div>`;
                 }
             } else {
                 const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
-                const e = entregas.find(item => item.entregador.toLowerCase().includes(termo) || item.placa_carro.toLowerCase().includes(termo) || item.cpf.includes(termo));
+                // Correção aqui: buscando pelas chaves exatas de entrega (entregador, placa_carro, cpf)
+                const e = entregas.find(item => 
+                    (item.entregador && item.entregador.toLowerCase().includes(termo)) || 
+                    (item.placa_carro && item.placa_carro.toLowerCase().includes(termo)) || 
+                    (item.cpf && item.cpf.includes(termo))
+                );
                 
                 if(e) {
                     painel.innerHTML = `
@@ -249,7 +262,7 @@
                             <p><strong>Nota Fiscal Nº:</strong> ${e.numero_nf} | <strong>Empresa Transp.:</strong> ${e.empresa_entrega || '-'}</p>
                         </div>`;
                 } else {
-                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange;">Nenhuma entrega localizada com essa placa ou nome de entregador.</div>`;
+                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange; background-color: #fffbf0;">Nenhuma entrega localizada com essa placa ou nome.</div>`;
                 }
             }
             painel.style.display = 'block';
