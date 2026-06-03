@@ -9,17 +9,35 @@
         .header { text-align: center; color: white; margin-bottom: 20px; margin-top: 20px; }
         .header h1 { margin: 0; font-size: 50px; font-weight: bold; letter-spacing: 3px; }
         .header p { margin: 5px 0 0; font-size: 20px; letter-spacing: 2px; text-transform: uppercase; }
-        .container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 600px; margin-bottom: 20px; }
+        
+        .container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 600px; margin-bottom: 20px; box-sizing: border-box; }
         h2 { margin-top: 0; color: #333; text-align: center; margin-bottom: 20px; }
-        h3 { color: #555; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; margin-top: 25px; margin-bottom: 15px; }
+        h3 { color: #555; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; margin-top: 15px; margin-bottom: 15px; }
+        
+        /* Estilo das Abas */
+        .abas-menu { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ccc; width: 100%; }
+        .aba-btn { flex: 1; padding: 12px; border: none; background: #e0e0e0; cursor: pointer; font-size: 16px; font-weight: bold; color: #555; transition: 0.3s; border-radius: 8px 8px 0 0; }
+        .aba-btn.ativa { background: #2c3e50; color: white; }
+        .aba-conteudo { display: none; }
+        .aba-conteudo.ativa { display: block; }
+
         label { display: block; margin-bottom: 5px; color: #666; font-weight: 500; }
         input[type="text"], select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; width: 100%; margin-top: 10px; font-weight: bold; }
-        .btn-busca { background-color: #4a90e2; color: white; width: auto; display: inline-block; margin-top: 0; }
+        
+        .busca-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .busca-container input { margin-bottom: 0; flex: 1; }
+        
+        button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
+        .btn-busca { background-color: #4a90e2; color: white; }
         .btn-busca:hover { background-color: #357abd; }
-        .btn-salvar { background-color: #2c3e50; color: white; margin-top: 20px; }
+        .btn-salvar { background-color: #2c3e50; color: white; width: 100%; margin-top: 10px; }
         .btn-salvar:hover { background-color: #1a252f; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        
+        /* Resultados da busca na própria página */
+        .resultado-busca { background-color: #f0f7ff; border: 1px solid #4a90e2; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #333; }
+        .resultado-busca h4 { margin: 0 0 10px 0; color: #2c3e50; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background-color: #f2f2f2; color: #333; }
     </style>
@@ -32,129 +50,213 @@
     </div>
 
     <div class="container">
-        <h2>Sistema de Portaria</h2>
+        <h2>Controle de Portaria</h2>
+        
+        <div class="abas-menu">
+            <button class="aba-btn ativa" onclick="mudarAba('portaria')">Portaria Geral</button>
+            <button class="aba-btn" onclick="mudarAba('entregas')">Controle de Entregas</button>
+        </div>
 
         <h3>Pesquisar Cadastro</h3>
-        <label for="busca">Nome ou CPF:</label>
-        <input type="text" id="busca" name="busca" placeholder="Digite para pesquisar...">
-        <button type="button" class="btn-busca" id="btnBuscar">Buscar</button>
-        <hr>
+        <div class="busca-container">
+            <input type="text" id="campoBusca" placeholder="Digite nome, CPF ou placa para buscar...">
+            <button type="button" class="btn-busca" onclick="executarBusca()">Buscar</button>
+        </div>
+        <div id="painelResultado" style="display: none;"></div>
 
-        <form id="formPortaria">
-            <h3>Cadastro Geral</h3>
-            <label for="tipo">Tipo de Cadastro:</label>
-            <select id="tipo" name="tipo" required>
-                <option value="visitante">Visitante</option>
-                <option value="prestador">Prestador de Serviço</option>
-                <option value="funcionario">Funcionário</option>
-                <option value="entregador">Entregador</option>
-            </select>
+        <div id="aba-portaria" class="aba-conteudo ativa">
+            <form id="formPortaria">
+                <h3>Cadastro Geral</h3>
+                <label for="tipo">Tipo de Cadastro:</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="Visitante">Visitante</option>
+                    <option value="Prestador">Prestador de Serviço</option>
+                    <option value="Funcionário">Funcionário</option>
+                </select>
 
-            <label for="nome">Nome:</label>
-            <input type="text" id="nome" name="nome" required>
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" required>
 
-            <label for="cpf">CPF/CNPJ:</label>
-            <input type="text" id="cpf" name="cpf" required>
+                <label for="cpf">CPF/CNPJ:</label>
+                <input type="text" id="cpf" required>
 
-            <label for="empresa">Empresa (se aplicável):</label>
-            <input type="text" id="empresa" name="empresa">
+                <label for="empresa">Empresa (se aplicável):</label>
+                <input type="text" id="empresa">
 
-            <label for="visitado">Quem vai visitar / Setor:</label>
-            <input type="text" id="visitado" name="visitado">
+                <label for="visitado">Quem vai visitar / Setor:</label>
+                <input type="text" id="visitado" required>
 
-            <h3>Controle de Entrega</h3>
-            <label for="numero_nf">Número da Nota Fiscal:</label>
-            <input type="text" id="numero_nf" name="numero_nf">
+                <button type="submit" class="btn-salvar">Salvar Entrada</button>
+            </form>
+        </div>
 
-            <label for="entregador">Nome del Entregador:</label>
-            <input type="text" id="entregador" name="entregador">
+        <div id="aba-entregas" class="aba-conteudo">
+            <form id="formEntregas">
+                <h3>Dados do Entregador e Veículo</h3>
+                
+                <label for="entregador">Nome do Entregador:</label>
+                <input type="text" id="entregador" required>
 
-            <label for="empresa_entrega">Nome da Empresa (Entregadora):</label>
-            <input type="text" id="empresa_entrega" name="empresa_entrega">
+                <label for="cpf_entregador">CPF do Entregador:</label>
+                <input type="text" id="cpf_entregador" required>
 
-            <label for="placa_carro">Placa do Carro:</label>
-            <input type="text" id="placa_carro" name="placa_carro">
+                <label for="empresa_entrega">Empresa (Entregadora):</label>
+                <input type="text" id="empresa_entrega">
 
-            <label for="modelo_carro">Modelo do Carro:</label>
-            <input type="text" id="modelo_carro" name="modelo_carro">
+                <label for="placa_carro">Placa do Carro/Caminhão:</label>
+                <input type="text" id="placa_carro" required>
 
-            <button type="submit" class="btn-salvar">Salvar Registro</button>
-        </form>
+                <label for="modelo_carro">Modelo do Veículo:</label>
+                <input type="text" id="modelo_carro">
+
+                <label for="numero_nf">Número da Nota Fiscal:</label>
+                <input type="text" id="numero_nf" required>
+
+                <button type="submit" class="btn-salvar">Salvar Entrega</button>
+            </form>
+        </div>
     </div>
 
     <div class="container">
-        <h3>Relatório de Cadastros</h3>
+        <h3 id="tituloRelatorio">Pessoas no Interior da Empresa</h3>
         <table id="tabelaRelatorio">
-            <thead>
-                <tr>
-                    <th>Tipo</th>
-                    <th>Nome</th>
-                    <th>CPF/CNPJ</th>
-                </tr>
-            </thead>
+            <thead id="cabecalhoTabela">
+                </thead>
             <tbody>
-                <!-- Registros salvos aparecerão aqui -->
-            </tbody>
+                </tbody>
         </table>
     </div>
 
     <script>
-        const form = document.getElementById('formPortaria');
-        const btnBuscar = document.getElementById('btnBuscar');
-        const tabelaRelatorio = document.getElementById('tabelaRelatorio').querySelector('tbody');
+        let abaAtiva = 'portaria';
 
-        function atualizarTabela() {
-            tabelaRelatorio.innerHTML = '';
-            const registros = JSON.parse(localStorage.getItem('registrosPortaria') || '[]');
-            registros.forEach(registro => {
-                const linha = document.createElement('tr');
-                linha.innerHTML = `
-                    <td>${registro.tipo}</td>
-                    <td>${registro.nome}</td>
-                    <td>${registro.cpf}</td>
-                `;
-                tabelaRelatorio.appendChild(linha);
-            });
+        // Alternar entre as abas
+        function mudarAba(aba) {
+            abaAtiva = aba;
+            document.querySelectorAll('.aba-btn').forEach(btn => btn.classList.remove('ativa'));
+            document.querySelectorAll('.aba-conteudo').forEach(cont => cont.classList.remove('ativa'));
+            document.getElementById('painelResultado').style.display = 'none';
+            document.getElementById('campoBusca').value = '';
+
+            if(aba === 'portaria') {
+                document.querySelector('[onclick="mudarAba(\'portaria\')"]').classList.add('ativa');
+                document.getElementById('aba-portaria').classList.add('ativa');
+                document.getElementById('tituloRelatorio').innerText = "Pessoas no Interior da Empresa";
+            } else {
+                document.querySelector('[onclick="mudarAba(\'entregas\')"]').classList.add('ativa');
+                document.getElementById('aba-entregas').classList.add('ativa');
+                document.getElementById('tituloRelatorio').innerText = "Fluxo de Entregas Ativas";
+            }
+            atualizarTabela();
         }
 
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
+        // Atualizar listagem em tempo real dependendo da aba ativa
+        function atualizarTabela() {
+            const tbody = document.getElementById('tabelaRelatorio').querySelector('tbody');
+            const cabecalho = document.getElementById('cabecalhoTabela');
+            tbody.innerHTML = '';
 
-            const novoRegistro = {
+            if (abaAtiva === 'portaria') {
+                cabecalho.innerHTML = `<tr><th>Tipo</th><th>Nome</th><th>CPF</th><th>Quem vai Visitar</th></tr>`;
+                const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
+                registros.forEach(r => {
+                    const linha = document.createElement('tr');
+                    linha.innerHTML = `<td>${r.tipo}</td><td>${r.nome}</td><td>${r.cpf}</td><td>${r.visitado}</td>`;
+                    tbody.appendChild(linha);
+                });
+            } else {
+                cabecalho.innerHTML = `<tr><th>Entregador</th><th>Placa</th><th>Nº NF</th><th>Empresa</th></tr>`;
+                const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
+                entregas.forEach(e => {
+                    const linha = document.createElement('tr');
+                    linha.innerHTML = `<td>${e.entregador}</td><td>${e.placa_carro}</td><td>${e.numero_nf}</td><td>${e.empresa_entrega || '-'}</td>`;
+                    tbody.appendChild(linha);
+                });
+            }
+        }
+
+        // Cadastro da Portaria Geral
+        document.getElementById('formPortaria').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const novo = {
                 tipo: document.getElementById('tipo').value,
                 nome: document.getElementById('nome').value,
-                cpf: document.getElementById('cpf').value.trim()
+                cpf: document.getElementById('cpf').value.trim(),
+                empresa: document.getElementById('empresa').value,
+                visitado: document.getElementById('visitado').value
             };
-
-            let registros = JSON.parse(localStorage.getItem('registrosPortaria') || '[]');
-            registros.push(novoRegistro);
-            localStorage.setItem('registrosPortaria', JSON.stringify(registros));
-
-            form.reset();
+            let lista = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
+            lista.push(novo);
+            localStorage.setItem('vicon_portaria', JSON.stringify(lista));
+            this.reset();
             atualizarTabela();
         });
 
-        btnBuscar.addEventListener('click', function() {
-            const termoBusca = document.getElementById('busca').value.trim().toLowerCase();
-            if (!termoBusca) {
-                alert('Digite um nome ou CPF para buscar.');
+        // Cadastro de Entregas
+        document.getElementById('formEntregas').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const novaEntrega = {
+                entregador: document.getElementById('entregador').value,
+                cpf: document.getElementById('cpf_entregador').value.trim(),
+                empresa_entrega: document.getElementById('empresa_entrega').value,
+                placa_carro: document.getElementById('placa_carro').value.toUpperCase().trim(),
+                modelo_carro: document.getElementById('modelo_carro').value,
+                numero_nf: document.getElementById('numero_nf').value
+            };
+            let lista = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
+            lista.push(novaEntrega);
+            localStorage.setItem('vicon_entregas', JSON.stringify(lista));
+            this.reset();
+            atualizarTabela();
+        });
+
+        // Executar Busca exibindo o resultado na própria tela
+        function ejecutarBusca() {
+            const termo = document.getElementById('campoBusca').value.trim().toLowerCase();
+            const painel = document.getElementById('painelResultado');
+            
+            if(!termo) {
+                painel.innerHTML = `<div class="resultado-busca" style="border-color: red;">Por favor, digite um termo para pesquisar.</div>`;
+                painel.style.display = 'block';
                 return;
             }
 
-            const registros = JSON.parse(localStorage.getItem('registrosPortaria') || '[]');
-            const resultado = registros.find(r => 
-                r.nome.toLowerCase().includes(termoBusca) || r.cpf.includes(termoBusca)
-            );
-
-            if (resultado) {
-                alert('Registro encontrado:\nNome: ' + resultado.nome + '\nCPF/CNPJ: ' + resultado.cpf);
+            if (abaAtiva === 'portaria') {
+                const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
+                const r = registros.find(item => item.nome.toLowerCase().includes(termo) || item.cpf.includes(termo));
+                
+                if(r) {
+                    painel.innerHTML = `
+                        <div class="resultado-busca">
+                            <h4>✓ Registro Encontrado (Portaria Geral)</h4>
+                            <p><strong>Tipo:</strong> ${r.tipo} | <strong>Nome:</strong> ${r.nome}</p>
+                            <p><strong>CPF:</strong> ${r.cpf} | <strong>Destino/Setor:</strong> ${r.visitado}</p>
+                            ${r.empresa ? `<p><strong>Empresa:</strong> ${r.empresa}</p>` : ''}
+                        </div>`;
+                } else {
+                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange;">Nenhum visitante, funcionário ou prestador localizado com esse termo.</div>`;
+                }
             } else {
-                alert('Nenhum registro encontrado.');
+                const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
+                const e = entregas.find(item => item.entregador.toLowerCase().includes(termo) || item.placa_carro.toLowerCase().includes(termo) || item.cpf.includes(termo));
+                
+                if(e) {
+                    painel.innerHTML = `
+                        <div class="resultado-busca">
+                            <h4>✓ Registro Encontrado (Controle de Entregas)</h4>
+                            <p><strong>Entregador:</strong> ${e.entregador} | <strong>CPF:</strong> ${e.cpf}</p>
+                            <p><strong>Placa:</strong> ${e.placa_carro} | <strong>Modelo:</strong> ${e.modelo_carro || '-'}</p>
+                            <p><strong>Nota Fiscal Nº:</strong> ${e.numero_nf} | <strong>Empresa Transp.:</strong> ${e.empresa_entrega || '-'}</p>
+                        </div>`;
+                } else {
+                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange;">Nenhuma entrega localizada com essa placa ou nome de entregador.</div>`;
+                }
             }
-        });
+            painel.style.display = 'block';
+        }
 
+        // Inicializar a tabela na primeira carga da página
         atualizarTabela();
     </script>
 </body>
 </html>
-
