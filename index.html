@@ -169,78 +169,68 @@
 
     <script>
         const form = document.getElementById('formPortaria');
+        const btnBuscar = document.getElementById('btnBuscar');
+
+        // FUNÇÃO PARA SALVAR
         form.addEventListener('submit', function(event) {
             event.preventDefault();
-            alert('Registro salvo com sucesso!');
+
+            const novoRegistro = {
+                tipo: document.getElementById('tipo').value,
+                nome: document.getElementById('nome').value,
+                cpf: document.getElementById('cpf').value.trim(),
+                empresa: document.getElementById('empresa').value,
+                visitado: document.getElementById('visitado').value,
+                numero_nf: document.getElementById('numero_nf').value,
+                entregador: document.getElementById('entregador').value,
+                empresa_entrega: document.getElementById('empresa_entrega').value,
+                placa_carro: document.getElementById('placa_carro').value,
+                data: new Date().toLocaleString('pt-BR')
+            };
+
+            // Pega o histórico do LocalStorage ou cria um vazio
+            let registros = JSON.parse(localStorage.getItem('registrosVicon') || '[]');
+            
+            // Adiciona o novo na lista
+            registros.push(novoRegistro);
+            
+            // Grava de volta na memória do navegador
+            localStorage.setItem('registrosVicon', JSON.stringify(registros));
+
+            alert('Registro de ' + novoRegistro.nome + ' salvo com sucesso!');
             form.reset();
         });
 
-        const btnBuscar = document.getElementById('btnBuscar');
+        // FUNÇÃO DE BUSCA
         btnBuscar.addEventListener('click', function() {
-            const termoBusca = document.getElementById('busca').value;
-            if (termoBusca) {
-                alert('Buscando por: ' + termoBusca);
+            const termoBusca = document.getElementById('busca').value.trim().toLowerCase();
+            
+            if (!termoBusca) {
+                alert('Por favor, digite um Nome ou CPF para buscar.');
+                return;
+            }
+
+            const registros = JSON.parse(localStorage.getItem('registrosVicon') || '[]');
+
+            // Procura por nome parcial ou CPF exato
+            const resultado = registros.find(r => 
+                r.nome.toLowerCase().includes(termoBusca) || 
+                r.cpf.toLowerCase() === termoBusca
+            );
+
+            if (resultado) {
+                alert('REGISTRO ENCONTRADO:\n\n' +
+                      'Tipo: ' + resultado.tipo.toUpperCase() + '\n' +
+                      'Nome: ' + resultado.nome + '\n' +
+                      'CPF/CNPJ: ' + resultado.cpf + '\n' +
+                      'Empresa: ' + (resultado.empresa || 'Não informada') + '\n' +
+                      'Destino/Setor: ' + resultado.visitado + '\n' +
+                      'Data/Hora: ' + resultado.data);
             } else {
-                alert('Digite um nome ou CPF para buscar.');
+                alert('Nenhum cadastro encontrado com o termo: ' + termoBusca);
             }
         });
     </script>
 
 </body>
 </html>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('formPortaria');
-        const btnBuscar = document.getElementById('btnBuscar');
-
-        // Função de salvar
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            try {
-                const novoRegistro = {
-                    nome: document.getElementById('nome').value,
-                    cpf: document.getElementById('cpf').value,
-                    tipo: document.getElementById('tipo').value,
-                    empresa: document.getElementById('empresa').value,
-                    visitado: document.getElementById('visitado').value,
-                    data: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString()
-                };
-
-                let registros = JSON.parse(localStorage.getItem('registrosVicon') || '[]');
-                registros.push(novoRegistro);
-                localStorage.setItem('registrosVicon', JSON.stringify(registros));
-                
-                alert('Registro salvo com sucesso!');
-                form.reset();
-            } catch (e) {
-                console.error("Erro ao salvar:", e);
-                alert('Erro ao salvar os dados.');
-            }
-        });
-
-        // Função de busca
-        btnBuscar.addEventListener('click', function() {
-            const termoBusca = document.getElementById('busca').value.trim().toLowerCase();
-            const dadosArmazenados = localStorage.getItem('registrosVicon');
-            
-            if (!dadosArmazenados) {
-                alert('Nenhum dado cadastrado ainda.');
-                return;
-            }
-
-            const registros = JSON.parse(dadosArmazenados);
-            const resultado = registros.find(r => 
-                r.nome.toLowerCase().includes(termoBusca) || 
-                r.cpf.includes(termoBusca)
-            );
-
-            if (resultado) {
-                alert('Encontrado:\nNome: ' + resultado.nome + '\nCPF: ' + resultado.cpf + '\nVisitado: ' + resultado.visitado + '\nData: ' + resultado.data);
-            } else {
-                alert('Nenhum registro encontrado para: ' + termoBusca);
-            }
-        });
-    });
-</script>
-
