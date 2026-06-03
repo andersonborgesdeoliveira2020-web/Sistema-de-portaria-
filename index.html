@@ -24,3 +24,167 @@
         }
 
         .header h1 {
+            margin: 0;
+            font-size: 50px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            font-size: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .btn-busca {
+            background-color: #4a90e2;
+            color: white;
+            width: auto;
+            display: inline-block;
+            margin-top: 0;
+        }
+
+        .btn-busca:hover {
+            background-color: #357abd;
+        }
+
+        .btn-salvar {
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .btn-salvar:hover {
+            background-color: #1a252f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>VICON</h1>
+        <p>Máquinas Agrícolas</p>
+    </div>
+
+    <div class="container">
+        <h2>Sistema de Portaria</h2>
+
+        <h3>Pesquisar Cadastro</h3>
+        <label for="busca">Nome ou CPF:</label>
+        <input type="text" id="busca" name="busca" placeholder="Digite para pesquisar...">
+        <button type="button" class="btn-busca" id="btnBuscar">Buscar</button>
+        <hr>
+
+        <form id="formPortaria">
+            <h3>Cadastro Geral</h3>
+            <label for="tipo">Tipo de Cadastro:</label>
+            <select id="tipo" name="tipo" required>
+                <option value="visitante">Visitante</option>
+                <option value="prestador">Prestador de Serviço</option>
+                <option value="funcionario">Funcionário</option>
+            </select>
+
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="cpf">CPF/CNPJ:</label>
+            <input type="text" id="cpf" name="cpf" required>
+
+            <label for="empresa">Empresa (se aplicável):</label>
+            <input type="text" id="empresa" name="empresa">
+
+            <label for="visitado">Quem vai visitar / Setor:</label>
+            <input type="text" id="visitado" name="visitado" required>
+
+            <h3>Controle de Entrega</h3>
+            <label for="numero_nf">Número da Nota Fiscal:</label>
+            <input type="text" id="numero_nf" name="numero_nf">
+
+            <label for="entregador">Nome do Entregador:</label>
+            <input type="text" id="entregador" name="entregador">
+
+            <label for="empresa_entrega">Nome da Empresa (Entregadora):</label>
+            <input type="text" id="empresa_entrega" name="empresa_entrega">
+
+            <label for="placa_carro">Placa do Carro:</label>
+            <input type="text" id="placa_carro" name="placa_carro">
+
+            <button type="submit" class="btn-salvar">Salvar Registro</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('formPortaria');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            alert('Registro salvo com sucesso!');
+            form.reset();
+        });
+
+        const btnBuscar = document.getElementById('btnBuscar');
+        btnBuscar.addEventListener('click', function() {
+            const termoBusca = document.getElementById('busca').value;
+            if (termoBusca) {
+                alert('Buscando por: ' + termoBusca);
+            } else {
+                alert('Digite um nome ou CPF para buscar.');
+            }
+        });
+    </script>
+
+</body>
+</html>
