@@ -27,6 +27,15 @@
         .busca-container { display: flex; gap: 10px; margin-bottom: 15px; }
         .busca-container input { margin-bottom: 0; flex: 1; }
         
+        /* Container para Múltiplas Notas Fiscais */
+        .nf-wrapper { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+        .nf-wrapper input { margin-bottom: 0; flex: 1; }
+        .btn-add-nf { background-color: #4a90e2; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 18px; }
+        .btn-add-nf:hover { background-color: #357abd; }
+        .btn-remove-nf { background-color: #d9534f; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-remove-nf:hover { background-color: #c9302c; }
+        #lista-nfs { margin-bottom: 15px; }
+
         button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
         .btn-busca { background-color: #4a90e2; color: white; }
         .btn-busca:hover { background-color: #357abd; }
@@ -38,7 +47,7 @@
         .resultado-busca h4 { margin: 0 0 10px 0; color: #2c3e50; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; word-break: break-all; }
         th { background-color: #f2f2f2; color: #333; }
     </style>
 </head>
@@ -59,7 +68,7 @@
 
         <h3>Pesquisar Cadastro</h3>
         <div class="busca-container">
-            <input type="text" id="campoBusca" placeholder="Digite nome, CPF ou placa para buscar...">
+            <input type="text" id="campoBusca" placeholder="Digite nome, CPF, placa ou NF para buscar...">
             <button type="button" class="btn-busca" onclick="executarBusca()">Buscar</button>
         </div>
         <div id="painelResultado" style="display: none;"></div>
@@ -109,8 +118,13 @@
                 <label for="modelo_carro">Modelo do Veículo:</label>
                 <input type="text" id="modelo_carro">
 
-                <label for="numero_nf">Número da Nota Fiscal:</label>
-                <input type="text" id="numero_nf" required>
+                <label>Número da Nota Fiscal:</label>
+                <div id="lista-nfs">
+                    <div class="nf-wrapper">
+                        <input type="text" class="input-nf" placeholder="Digite o número da NF" required>
+                        <button type="button" class="btn-add-nf" onclick="adicionarCampoNF()">+</button>
+                    </div>
+                </div>
 
                 <button type="submit" class="btn-salvar">Salvar Entrega</button>
             </form>
@@ -134,11 +148,9 @@
         function mudarAba(aba) {
             abaAtiva = aba;
             
-            // Remove a classe ativa de todas as abas e conteúdos
             document.querySelectorAll('.aba-btn').forEach(btn => btn.classList.remove('ativa'));
             document.querySelectorAll('.aba-conteudo').forEach(cont => cont.classList.remove('ativa'));
             
-            // Limpa buscas anteriores ao trocar de aba
             document.getElementById('painelResultado').style.display = 'none';
             document.getElementById('campoBusca').value = '';
 
@@ -154,7 +166,35 @@
             atualizarTabela();
         }
 
-        // Atualizar listagem em tempo real dependendo da aba ativa
+        // Função para adicionar dinamicamente mais campos de Notas Fiscais
+        function adicionarCampoNF() {
+            const container = document.getElementById('lista-nfs');
+            const novoBloco = document.createElement('div');
+            novoBloco.className = 'nf-wrapper';
+            novoBloco.innerHTML = `
+                <input type="text" class="input-nf" placeholder="Digite outra NF" required>
+                <button type="button" class="btn-remove-nf" onclick="removerCampoNF(this)">x</button>
+            `;
+            container.appendChild(novoBloco);
+        }
+
+        // Função para remover o campo de Nota Fiscal criado
+        function removerCampoNF(botao) {
+            botao.parentElement.remove();
+        }
+
+        // Resetar a lista de NFs para apenas uma caixa inicial
+        function resetarCamposNF() {
+            const container = document.getElementById('lista-nfs');
+            container.innerHTML = `
+                <div class="nf-wrapper">
+                    <input type="text" class="input-nf" placeholder="Digite o número da NF" required>
+                    <button type="button" class="btn-add-nf" onclick="adicionarCampoNF()">+</button>
+                </div>
+            `;
+        }
+
+        // Atualizar listagem em tempo real
         function atualizarTabela() {
             const tbody = document.getElementById('tabelaRelatorio').querySelector('tbody');
             const cabecalho = document.getElementById('cabecalhoTabela');
@@ -169,7 +209,7 @@
                     tbody.appendChild(linha);
                 });
             } else {
-                cabecalho.innerHTML = `<tr><th>Entregador</th><th>Placa</th><th>Nº NF</th><th>Empresa</th></tr>`;
+                cabecalho.innerHTML = `<tr><th>Entregador</th><th>Placa</th><th>Nºs NF</th><th>Empresa</th></tr>`;
                 const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
                 entregas.forEach(e => {
                     const linha = document.createElement('tr');
@@ -196,25 +236,38 @@
             atualizarTabela();
         });
 
-        // Cadastro de Entregas
+        // Cadastro de Entregas (com múltiplas NFs)
         document.getElementById('formEntregas').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Coleta todas as Notas Fiscais preenchidas e junta com vírgula
+            const inputsNF = document.querySelectorAll('.input-nf');
+            let listaNFs = [];
+            inputsNF.forEach(input => {
+                if(input.value.trim() !== "") {
+                    listaNFs.push(input.value.trim());
+                }
+            });
+
             const novaEntrega = {
                 entregador: document.getElementById('entregador').value,
                 cpf: document.getElementById('cpf_entregador').value.trim(),
                 empresa_entrega: document.getElementById('empresa_entrega').value,
                 placa_carro: document.getElementById('placa_carro').value.toUpperCase().trim(),
                 modelo_carro: document.getElementById('modelo_carro').value,
-                numero_nf: document.getElementById('numero_nf').value
+                numero_nf: listaNFs.join(', ') // Salva como "101, 102, 103"
             };
+
             let lista = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
             lista.push(novaEntrega);
             localStorage.setItem('vicon_entregas', JSON.stringify(lista));
+            
             this.reset();
+            resetarCamposNF(); // Volta a ter só um campo de NF
             atualizarTabela();
         });
 
-        // Executar Busca corrigida e exibindo na tela
+        // Executar Busca na própria tela
         function executarBusca() {
             const termo = document.getElementById('campoBusca').value.trim().toLowerCase();
             const painel = document.getElementById('painelResultado');
@@ -227,7 +280,6 @@
 
             if (abaAtiva === 'portaria') {
                 const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
-                // Correção aqui: garantindo que as variáveis existem antes de rodar o .includes()
                 const r = registros.find(item => 
                     (item.nome && item.nome.toLowerCase().includes(termo)) || 
                     (item.cpf && item.cpf.includes(termo))
@@ -246,11 +298,11 @@
                 }
             } else {
                 const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
-                // Correção aqui: buscando pelas chaves exatas de entrega (entregador, placa_carro, cpf)
                 const e = entregas.find(item => 
                     (item.entregador && item.entregador.toLowerCase().includes(termo)) || 
                     (item.placa_carro && item.placa_carro.toLowerCase().includes(termo)) || 
-                    (item.cpf && item.cpf.includes(termo))
+                    (item.cpf && item.cpf.includes(termo)) ||
+                    (item.numero_nf && item.numero_nf.toLowerCase().includes(termo)) // Permite buscar por um número de NF específico
                 );
                 
                 if(e) {
@@ -259,16 +311,17 @@
                             <h4>✓ Registro Encontrado (Controle de Entregas)</h4>
                             <p><strong>Entregador:</strong> ${e.entregador} | <strong>CPF:</strong> ${e.cpf}</p>
                             <p><strong>Placa:</strong> ${e.placa_carro} | <strong>Modelo:</strong> ${e.modelo_carro || '-'}</p>
-                            <p><strong>Nota Fiscal Nº:</strong> ${e.numero_nf} | <strong>Empresa Transp.:</strong> ${e.empresa_entrega || '-'}</p>
+                            <p><strong>Notas Fiscais:</strong> <span style="color: blue; font-weight: bold;">${e.numero_nf}</span></p>
+                            <p><strong>Empresa Transp.:</strong> ${e.empresa_entrega || '-'}</p>
                         </div>`;
                 } else {
-                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange; background-color: #fffbf0;">Nenhuma entrega localizada com essa placa ou nome.</div>`;
+                    painel.innerHTML = `<div class="resultado-busca" style="border-color: orange; background-color: #fffbf0;">Nenhuma entrega localizada com essa placa, nome ou Nota Fiscal.</div>`;
                 }
             }
             painel.style.display = 'block';
         }
 
-        // Inicializar a tabela na primeira carga da página
+        // Inicializar a tabela
         atualizarTabela();
     </script>
 </body>
