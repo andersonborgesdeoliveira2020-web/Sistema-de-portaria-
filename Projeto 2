@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Portaria - Vicon</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 15px; background-color: #ff0000; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .header { text-align: center; color: white; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 40px; font-weight: bold; letter-spacing: 2px; }
+        .header p { margin: 5px 0 0; font-size: 18px; text-transform: uppercase; }
+        
+        .container { background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 100%; max-width: 600px; margin-bottom: 20px; box-sizing: border-box; }
+        h2 { margin-top: 0; color: #333; text-align: center; }
+        
+        /* Menu de Abas */
+        .abas-menu { display: flex; margin-bottom: 20px; background-color: #eee; border-radius: 5px; padding: 5px; }
+        .aba-btn { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 15px; font-weight: bold; color: #555; border-radius: 5px; }
+        .aba-btn.ativa { background-color: #2c3e50; color: white; }
+        .aba-conteudo { display: none; }
+        .aba-conteudo.ativa { display: block; }
+
+        /* Formulários */
+        label { display: block; margin-bottom: 5px; color: #333; font-weight: bold; }
+        input[type="text"], select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        
+        button.btn-salvar { background-color: #2c3e50; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button.btn-salvar:hover { background-color: #1a252f; }
+
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; }
+        th { background-color: #f2f2f2; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>VICON</h1>
+        <p>Máquinas Agrícolas</p>
+    </div>
+
+    <div class="container">
+        <h2>Controle de Acesso</h2>
+        
+        <div class="abas-menu">
+            <button class="aba-btn ativa" id="btn-portaria" onclick="mudarAba('portaria')">Portaria Geral</button>
+            <button class="aba-btn" id="btn-patio" onclick="mudarAba('patio')">Recebimento / Coleta</button>
+        </div>
+
+        <div id="aba-portaria" class="aba-conteudo ativa">
+            <form id="formPortaria" onsubmit="salvarPortaria(event)">
+                <label for="tipo">Tipo de Cadastro:</label>
+                <select id="tipo" required>
+                    <option value="Visitante">Visitante</option>
+                    <option value="Prestador">Prestador de Serviço</option>
+                    <option value="Funcionário">Funcionário</option>
+                </select>
+
+                <label for="nome">Nome Completo:</label>
+                <input type="text" id="nome" required placeholder="Ex: João Silva">
+
+                <label for="documento">CPF ou RG:</label>
+                <input type="text" id="documento" required placeholder="Digite o documento">
+
+                <label for="destino">Destino / Setor / Quem vai visitar:</label>
+                <input type="text" id="destino" required placeholder="Ex: RH / Engenharia">
+
+                <button type="submit" class="btn-salvar">Registrar Entrada</button>
+            </form>
+        </div>
+
+        <div id="aba-patio" class="aba-conteudo">
+            <h3>Controle de Caminhões</h3>
+            <p style="color: #666;">Esta aba está limpa. Vamos montar os campos dela assim que você mandar.</p>
+        </div>
+    </div>
+
+    <div class="container" style="max-width: 800px;">
+        <h3 id="tituloTabela" style="margin-top:0;">Pessoas no Interior da Empresa</h3>
+        <table id="tabelaDados">
+            <thead id="cabecalhoTabela">
+                <tr>
+                    <th>Tipo</th>
+                    <th>Nome</th>
+                    <th>Documento</th>
+                    <th>Destino</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabela">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Array local para guardar os dados na memória da página temporariamente
+        let dadosPortaria = [];
+
+        // Função para mudar de aba sem travar
+        function mudarAba(aba) {
+            document.querySelectorAll('.aba-btn').forEach(b => b.classList.remove('ativa'));
+            document.querySelectorAll('.aba-conteudo').forEach(c => c.classList.remove('ativa'));
+
+            if (aba === 'portaria') {
+                document.getElementById('btn-portaria').classList.add('ativa');
+                document.getElementById('aba-portaria').classList.add('ativa');
+                document.getElementById('tituloTabela').innerText = "Pessoas no Interior da Empresa";
+                atualizarTabelaPortaria();
+            } else {
+                document.getElementById('btn-patio').classList.add('ativa');
+                document.getElementById('aba-patio').classList.add('ativa');
+                document.getElementById('tituloTabela').innerText = "Fluxo de Veículos (Pátio)";
+                document.getElementById('cabecalhoTabela').innerHTML = `<tr><th>Operação</th><th>Motorista</th><th>Placa</th><th>Status</th></tr>`;
+                document.getElementById('corpoTabela').innerHTML = `<tr><td colspan="4" style="text-align:center; color:#999;">Aba pátio em desenvolvimento...</td></tr>`;
+            }
+        }
+
+        // Função para salvar o cadastro geral na tabela
+        function salvarPortaria(event) {
+            event.preventDefault(); // Impede a página de atualizar
+
+            const novoRegistro = {
+                tipo: document.getElementById('tipo').value,
+                nome: document.getElementById('nome').value,
+                documento: document.getElementById('documento').value,
+                destino: document.getElementById('destino').value
+            };
+
+            dadosPortaria.push(novoRegistro);
+            atualizarTabelaPortaria();
+            
+            // Limpa o formulário para o próximo cadastro
+            document.getElementById('formPortaria').reset();
+        }
+
+        // Função para atualizar a tabela da portaria na tela
+        function atualizarTabelaPortaria() {
+            document.getElementById('cabecalhoTabela').innerHTML = `<tr><th>Tipo</th><th>Nome</th><th>Documento</th><th>Destino</th></tr>`;
+            const tabela = document.getElementById('corpoTabela');
+            tabela.innerHTML = "";
+
+            dadosPortaria.forEach(reg => {
+                const linha = document.createElement('tr');
+                linha.innerHTML = `<td>${reg.tipo}</td><td>${reg.nome}</td><td>${reg.documento}</td><td>${reg.destino}</td>`;
+                tabela.appendChild(linha);
+            });
+        }
+    </script>
+</body>
+</html>
