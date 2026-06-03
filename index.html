@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
         h2 { margin-top: 0; color: #333; text-align: center; margin-bottom: 20px; }
         h3 { color: #555; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; margin-top: 15px; margin-bottom: 15px; }
         
-        /* Estilo das Abas */
+        /* Menu de Abas */
         .abas-menu { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ccc; width: 100%; }
         .aba-btn { flex: 1; padding: 12px; border: none; background: #e0e0e0; cursor: pointer; font-size: 16px; font-weight: bold; color: #555; transition: 0.3s; border-radius: 8px 8px 0 0; }
         .aba-btn.ativa { background: #2c3e50; color: white; }
@@ -27,31 +27,37 @@
         .busca-container { display: flex; gap: 10px; margin-bottom: 15px; }
         .busca-container input { margin-bottom: 0; flex: 1; }
         
-        /* Opções de rádio estilizadas para Operação */
         .opcoes-operacao { display: flex; gap: 20px; margin-bottom: 15px; padding: 5px 0; }
         .opcoes-operacao label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #333; font-weight: bold; }
         .opcoes-operacao input[type="radio"] { transform: scale(1.2); cursor: pointer; }
 
-        /* Container para Múltiplas Notas Fiscais */
+        /* Múltiplas Notas Fiscais */
         .nf-wrapper { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
         .nf-wrapper input { margin-bottom: 0; flex: 1; }
         .btn-add-nf { background-color: #4a90e2; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 18px; }
         .btn-add-nf:hover { background-color: #357abd; }
         .btn-remove-nf { background-color: #d9534f; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
         .btn-remove-nf:hover { background-color: #c9302c; }
-        #secao-nf { display: block; }
-
+        
+        /* Estilos de Botões */
         button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
         .btn-busca { background-color: #4a90e2; color: white; }
         .btn-busca:hover { background-color: #357abd; }
         .btn-salvar { background-color: #2c3e50; color: white; width: 100%; margin-top: 10px; }
         .btn-salvar:hover { background-color: #1a252f; }
-        .btn-saida { background-color: #e67e22; color: white; padding: 6px 12px; font-size: 13px; border-radius: 4px; }
+        .btn-relatorio { background-color: #27ae60; color: white; width: 100%; margin-top: 15px; margin-bottom: 5px; }
+        .btn-relatorio:hover { background-color: #219653; }
+        .btn-saida { background-color: #e67e22; color: white; padding: 8px 12px; font-size: 13px; border-radius: 4px; }
         .btn-saida:hover { background-color: #d35400; }
         
+        /* Modal flutuante para a Saída do Caminhão */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-cancelar { background-color: #7f8c8d; color: white; flex: 1; }
+        .btn-confirmar-saida { background-color: #d35400; color: white; flex: 1; }
+
         .resultado-busca { background-color: #f0f7ff; border: 1px solid #4a90e2; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #333; }
-        .resultado-busca h4 { margin: 0 0 10px 0; color: #2c3e50; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; }
         th { background-color: #f2f2f2; color: #333; }
@@ -76,7 +82,7 @@
 
         <h3>Pesquisar Cadastro</h3>
         <div class="busca-container">
-            <input type="text" id="campoBusca" placeholder="Digite nome, CPF, placa ou NF para buscar...">
+            <input type="text" id="campoBusca" placeholder="Digite nome, CPF, placa ou NF...">
             <button type="button" class="btn-busca" onclick="executarBusca()">Buscar</button>
         </div>
         <div id="painelResultado" style="display: none;"></div>
@@ -105,11 +111,13 @@
 
                 <button type="submit" class="btn-salvar">Salvar Entrada</button>
             </form>
+            
+            <button type="button" class="btn-relatorio" onclick="gerarExcelPortaria()">📊 Gerar Relatório Excel</button>
         </div>
 
         <div id="aba-entregas" class="aba-conteudo">
             <form id="formEntregas">
-                <h3>Tipo de Operação</h3>
+                <h3>Tipo de Operação (Entrada)</h3>
                 <div class="opcoes-operacao">
                     <label>
                         <input type="radio" name="operacao" value="Recebimento" checked onclick="ajustarCamposOperacao('Recebimento')"> 
@@ -137,12 +145,12 @@
                 <label for="modelo_carro">Modelo do Veículo:</label>
                 <input type="text" id="modelo_carro">
 
-                <div id="secao-nf">
-                    <label>Número da(s) Nota(s) Fiscal(is):</label>
-                    <div id="lista-nfs">
+                <div id="secao-nf-entrada">
+                    <label>Número da(s) Nota(s) Fiscal(is) de Entrada:</label>
+                    <div id="lista-nfs-entrada">
                         <div class="nf-wrapper">
-                            <input type="text" class="input-nf" id="primeira-nf" placeholder="Digite o número da NF">
-                            <button type="button" class="btn-add-nf" onclick="adicionarCampoNF()">+</button>
+                            <input type="text" class="input-nf-entrada" id="primeira-nf-entrada" placeholder="Número da NF de Entrada">
+                            <button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-entrada', 'input-nf-entrada')">+</button>
                         </div>
                     </div>
                 </div>
@@ -152,18 +160,36 @@
         </div>
     </div>
 
-    <div class="container" style="max-width: 800px;">
+    <div class="container" style="max-width: 850px;">
         <h3 id="tituloRelatorio">Pessoas no Interior da Empresa</h3>
         <table id="tabelaRelatorio">
-            <thead id="cabecalhoTabela">
-                </thead>
-            <tbody>
-                </tbody>
+            <thead id="cabecalhoTabela"></thead>
+            <tbody></tbody>
         </table>
+    </div>
+
+    <div id="modalSaida" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">Registrar Saída do Veículo</h3>
+            <p>O veículo está saindo com Nota Fiscal de Saída/Coleta?</p>
+            
+            <div id="lista-nfs-saida">
+                <div class="nf-wrapper">
+                    <input type="text" class="input-nf-saida" placeholder="Número da NF de Saída (Opcional)">
+                    <button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-saida', 'input-nf-saida')">+</button>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-cancelar" onclick="fecharModalSaida()">Cancelar</button>
+                <button type="button" class="btn-confirmar-saida" onclick="confirmarSaidaCaminhao()">Confirmar Saída</button>
+            </div>
+        </div>
     </div>
 
     <script>
         let abaAtiva = 'portaria';
+        let indexCaminhaoSelecionado = null;
 
         function mudarAba(aba) {
             abaAtiva = aba;
@@ -184,10 +210,9 @@
             atualizarTabela();
         }
 
-        // Esconde ou mostra o campo da Nota Fiscal dependendo da operação
         function ajustarCamposOperacao(tipo) {
-            const secaoNF = document.getElementById('secao-nf');
-            const primeiraNF = document.getElementById('primeira-nf');
+            const secaoNF = document.getElementById('secao-nf-entrada');
+            const primeiraNF = document.getElementById('primeira-nf-entrada');
             if (tipo === 'Coleta') {
                 secaoNF.style.display = 'none';
                 primeiraNF.removeAttribute('required');
@@ -197,32 +222,129 @@
             }
         }
 
-        function adicionarCampoNF() {
-            const container = document.getElementById('lista-nfs');
+        // Função genérica para adicionar campos de NF (+) tanto na Entrada quanto Saída
+        function adicionarCampoNF(idContainer, classeInput) {
+            const container = document.getElementById(idContainer);
             const novoBloco = document.createElement('div');
             novoBloco.className = 'nf-wrapper';
             novoBloco.innerHTML = `
-                <input type="text" class="input-nf" placeholder="Digite outra NF" required>
-                <button type="button" class="btn-remove-nf" onclick="removerCampoNF(this)">x</button>
+                <input type="text" class="${classeInput}" placeholder="Digite outra NF" required>
+                <button type="button" class="btn-remove-nf" onclick="this.parentElement.remove()">x</button>
             `;
             container.appendChild(novoBloco);
         }
 
-        function removerCampoNF(botao) {
-            botao.parentElement.remove();
-        }
-
-        function resetarCamposNF() {
-            const container = document.getElementById('lista-nfs');
-            container.innerHTML = `
+        function resetarCamposNFEntrada() {
+            document.getElementById('lista-nfs-entrada').innerHTML = `
                 <div class="nf-wrapper">
-                    <input type="text" class="input-nf" id="primeira-nf" placeholder="Digite o número da NF" required>
-                    <button type="button" class="btn-add-nf" onclick="adicionarCampoNF()">+</button>
+                    <input type="text" class="input-nf-entrada" id="primeira-nf-entrada" placeholder="Número da NF de Entrada">
+                    <button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-entrada', 'input-nf-entrada')">+</button>
                 </div>
             `;
         }
 
-        // Função auxiliar para pegar data e hora atual formatada
+        function resetarCamposNFSaida() {
+            document.getElementById('lista-nfs-saida').innerHTML = `
+                <div class="nf-wrapper">
+                    <input type="text" class="input-nf-saida" placeholder="Número da NF de Saída (Opcional)">
+                    <button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-saida', 'input-nf-saida')">+</button>
+                </div>
+            `;
+        }
+
         function obterDataHoraAtual() {
             const agora = new Date();
-            const data = agora.toLocaleDateString
+            return `${agora.toLocaleDateString('pt-BR')} às ${agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        function atualizarTabela() {
+            const tbody = document.getElementById('tabelaRelatorio').querySelector('tbody');
+            const cabecalho = document.getElementById('cabecalhoTabela');
+            tbody.innerHTML = '';
+
+            if (abaAtiva === 'portaria') {
+                cabecalho.innerHTML = `<tr><th>Tipo</th><th>Nome</th><th>CPF</th><th>Quem vai Visitar</th></tr>`;
+                const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
+                registros.forEach(r => {
+                    const linha = document.createElement('tr');
+                    linha.innerHTML = `<td>${r.tipo}</td><td>${r.nome}</td><td>${r.cpf}</td><td>${r.visitado}</td>`;
+                    tbody.appendChild(linha);
+                });
+            } else {
+                cabecalho.innerHTML = `<tr><th>Operação</th><th>Motorista</th><th>Placa</th><th>Entrada</th><th>Saída</th><th>Ações</th></tr>`;
+                const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
+                
+                entregas.forEach((e, index) => {
+                    const linha = document.createElement('tr');
+                    let acao = `<span class="status-encerrado">Concluído</span>`;
+                    if (!e.saida) {
+                        acao = `<button class="btn-saida" onclick="abrirModalSaida(${index})">Dar Saída</button>`;
+                    }
+
+                    let exibicaoNotas = '';
+                    if(e.numero_nf) exibicaoNotas += `<br><small style="color:#2980b9">NF Entr: ${e.numero_nf}</small>`;
+                    if(e.numero_nf_saida) exibicaoNotas += `<br><small style="color:#d35400">NF Saíd: ${e.numero_nf_saida}</small>`;
+
+                    linha.innerHTML = `
+                        <td style="font-weight:bold; color:${e.operacao === 'Recebimento' ? '#2980b9' : '#8e44ad'}">${e.operacao}</td>
+                        <td>${e.entregador} ${exibicaoNotas}</td>
+                        <td>${e.placa_carro}</td>
+                        <td><small>${e.entrada}</small></td>
+                        <td><small>${e.saida ? e.saida : '<span class="status-patio">No Pátio</span>'}</small></td>
+                        <td>${acao}</td>
+                    `;
+                    tbody.appendChild(linha);
+                });
+            }
+        }
+
+        function abrirModalSaida(index) {
+            indexCaminhaoSelecionado = index;
+            resetarCamposNFSaida();
+            document.getElementById('modalSaida').style.display = 'flex';
+        }
+
+        function fecharModalSaida() {
+            document.getElementById('modalSaida').style.display = 'none';
+            indexCaminhaoSelecionado = null;
+        }
+
+        function confirmarSaidaCaminhao() {
+            if (indexCaminhaoSelecionado === null) return;
+            
+            let lista = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
+            const inputsNFSaida = document.querySelectorAll('.input-nf-saida');
+            let nfsSaida = [];
+            
+            inputsNFSaida.forEach(input => {
+                if(input.value.trim() !== "") nfsSaida.push(input.value.trim());
+            });
+
+            lista[indexCaminhaoSelecionado].saida = obterDataHoraAtual();
+            lista[indexCaminhaoSelecionado].numero_nf_saida = nfsSaida.join(', ');
+
+            localStorage.setItem('vicon_entregas', JSON.stringify(lista));
+            fecharModalSaida();
+            atualizarTabela();
+        }
+
+        // Formulário Portaria Geral
+        document.getElementById('formPortaria').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const novo = {
+                tipo: document.getElementById('tipo').value,
+                nome: document.getElementById('nome').value,
+                cpf: document.getElementById('cpf').value.trim(),
+                empresa: document.getElementById('empresa').value,
+                visitado: document.getElementById('visitado').value
+            };
+            let lista = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
+            lista.push(novo);
+            localStorage.setItem('vicon_portaria', JSON.stringify(lista));
+            this.reset();
+            atualizarTabela();
+        });
+
+        // Formulário Recebimento / Coleta
+        document.getElementById('formEntregas').addEventListener('submit', function(e) {
+            e.preventDefault();
