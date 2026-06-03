@@ -43,73 +43,33 @@
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 100%;
-            max-width: 500px;
-        }
-
-        h2 {
-            margin-top: 0;
-            color: #333;
-            text-align: center;
+            max-width: 600px;
             margin-bottom: 20px;
         }
 
-        h3 {
-            color: #555;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 8px;
-            margin-top: 25px;
-            margin-bottom: 15px;
-        }
+        h2 { margin-top: 0; color: #333; text-align: center; margin-bottom: 20px; }
+        h3 { color: #555; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; margin-top: 25px; margin-bottom: 15px; }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #666;
-            font-weight: 500;
-        }
+        label { display: block; margin-bottom: 5px; color: #666; font-weight: 500; }
+        input[type="text"], select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
 
-        input[type="text"], select {
+        button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; width: 100%; margin-top: 10px; font-weight: bold; }
+        .btn-salvar { background-color: #2c3e50; color: white; margin-top: 20px; }
+        .btn-salvar:hover { background-color: #1a252f; }
+
+        table {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            width: 100%;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        .btn-busca {
-            background-color: #4a90e2;
-            color: white;
-            width: auto;
-            display: inline-block;
-            margin-top: 0;
-        }
-
-        .btn-busca:hover {
-            background-color: #357abd;
-        }
-
-        .btn-salvar {
-            background-color: #2c3e50;
-            color: white;
+            border-collapse: collapse;
             margin-top: 20px;
         }
-
-        .btn-salvar:hover {
-            background-color: #1a252f;
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
         }
     </style>
 </head>
@@ -122,12 +82,6 @@
 
     <div class="container">
         <h2>Sistema de Portaria</h2>
-
-        <h3>Pesquisar Cadastro</h3>
-        <label for="busca">Nome ou CPF:</label>
-        <input type="text" id="busca" name="busca" placeholder="Digite para pesquisar...">
-        <button type="button" class="btn-busca" id="btnBuscar">Buscar</button>
-        <hr>
 
         <form id="formPortaria">
             <h3>Cadastro Geral</h3>
@@ -167,69 +121,58 @@
         </form>
     </div>
 
+    <div class="container">
+        <h3>Relatório de Pessoas no Interior da Empresa</h3>
+        <table id="tabelaRelatorio">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Visitado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Os registros cadastrados aparecerão aqui -->
+            </tbody>
+        </table>
+    </div>
+
     <script>
         const form = document.getElementById('formPortaria');
-        const btnBuscar = document.getElementById('btnBuscar');
+        const tabelaRelatorio = document.getElementById('tabelaRelatorio').querySelector('tbody');
 
-        // FUNÇÃO PARA SALVAR
+        function atualizarTabela() {
+            tabelaRelatorio.innerHTML = '';
+            const registros = JSON.parse(localStorage.getItem('registrosVicon') || '[]');
+            registros.forEach(registro => {
+                const linha = document.createElement('tr');
+                linha.innerHTML = `
+                    <td>${registro.nome}</td>
+                    <td>${registro.cpf}</td>
+                    <td>${registro.visitado}</td>
+                `;
+                tabelaRelatorio.appendChild(linha);
+            });
+        }
+
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
             const novoRegistro = {
-                tipo: document.getElementById('tipo').value,
                 nome: document.getElementById('nome').value,
                 cpf: document.getElementById('cpf').value.trim(),
-                empresa: document.getElementById('empresa').value,
-                visitado: document.getElementById('visitado').value,
-                numero_nf: document.getElementById('numero_nf').value,
-                entregador: document.getElementById('entregador').value,
-                empresa_entrega: document.getElementById('empresa_entrega').value,
-                placa_carro: document.getElementById('placa_carro').value,
-                data: new Date().toLocaleString('pt-BR')
+                visitado: document.getElementById('visitado').value
             };
 
-            // Pega o histórico do LocalStorage ou cria um vazio
             let registros = JSON.parse(localStorage.getItem('registrosVicon') || '[]');
-            
-            // Adiciona o novo na lista
             registros.push(novoRegistro);
-            
-            // Grava de volta na memória do navegador
             localStorage.setItem('registrosVicon', JSON.stringify(registros));
 
-            alert('Registro de ' + novoRegistro.nome + ' salvo com sucesso!');
             form.reset();
+            atualizarTabela();
         });
 
-        // FUNÇÃO DE BUSCA
-        btnBuscar.addEventListener('click', function() {
-            const termoBusca = document.getElementById('busca').value.trim().toLowerCase();
-            
-            if (!termoBusca) {
-                alert('Por favor, digite um Nome ou CPF para buscar.');
-                return;
-            }
-
-            const registros = JSON.parse(localStorage.getItem('registrosVicon') || '[]');
-
-            // Procura por nome parcial ou CPF exato
-            const resultado = registros.find(r => 
-                r.nome.toLowerCase().includes(termoBusca) || 
-                r.cpf.toLowerCase() === termoBusca
-            );
-
-            if (resultado) {
-                alert('REGISTRO ENCONTRADO:\n\n' +
-                      'Tipo: ' + resultado.tipo.toUpperCase() + '\n' +
-                      'Nome: ' + resultado.nome + '\n' +
-                      'CPF/CNPJ: ' + resultado.cpf + '\n' +
-                      'Empresa: ' + (resultado.empresa || 'Não informada') + '\n' +
-                      'Destino/Setor: ' + resultado.visitado + '\n' +
-                      'Data/Hora: ' + resultado.data);
-            } else {
-                alert('Nenhum cadastro encontrado com o termo: ' + termoBusca);
-            }
-        });
+        atualizarTabela();
     </script>
 
 </body>
