@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5,72 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Portaria - Vicon</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #ff0000;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 20px;
-            margin-top: 20px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 50px;
-            font-weight: bold;
-            letter-spacing: 3px;
-        }
-
-        .header p {
-            margin: 5px 0 0;
-            font-size: 20px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 20px;
-        }
-
-        h2 { margin-top: 0; color: #333; text-align: center; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #ff0000; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .header { text-align: center; color: white; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 50px; font-weight: bold; letter-spacing: 3px; }
+        .header p { margin: 5px 0 0; font-size: 20px; letter-spacing: 2px; text-transform: uppercase; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 600px; margin-bottom: 20px; }
         h3 { color: #555; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; margin-top: 25px; margin-bottom: 15px; }
-
         label { display: block; margin-bottom: 5px; color: #666; font-weight: 500; }
         input[type="text"], select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-
-        button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; width: 100%; margin-top: 10px; font-weight: bold; }
-        .btn-salvar { background-color: #2c3e50; color: white; margin-top: 20px; }
-        .btn-salvar:hover { background-color: #1a252f; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
+        button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; width: 100%; font-weight: bold; }
+        .btn-acao { background-color: #2c3e50; color: white; margin-top: 10px; }
+        .btn-acao:hover { background-color: #1a252f; }
+        .btn-busca { background-color: #4a90e2; color: white; width: auto; display: inline-block; margin-top: 0; }
+        .btn-busca:hover { background-color: #357abd; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; color: #333; }
     </style>
 </head>
 <body>
@@ -83,73 +34,65 @@
     <div class="container">
         <h2>Sistema de Portaria</h2>
 
+        <h3>Pesquisar Cadastro</h3>
+        <label for="busca">Nome do Entregador ou Placa:</label>
+        <input type="text" id="busca" name="busca" placeholder="Digite para pesquisar...">
+        <button type="button" class="btn-busca" id="btnBuscar">Buscar</button>
+
         <form id="formPortaria">
-            <h3>Cadastro Geral</h3>
-            <label for="tipo">Tipo de Cadastro:</label>
-            <select id="tipo" name="tipo" required>
-                <option value="visitante">Visitante</option>
-                <option value="prestador">Prestador de Serviço</option>
-                <option value="funcionario">Funcionário</option>
-            </select>
+            <h3>Dados da Entrega</h3>
+            <label for="entregador">Nome do Entregador:</label>
+            <input type="text" id="entregador" name="entregador" required>
 
-            <label for="nome">Nome:</label>
-            <input type="text" id="nome" name="nome" required>
-
-            <label for="cpf">CPF/CNPJ:</label>
+            <label for="cpf">CPF do Entregador:</label>
             <input type="text" id="cpf" name="cpf" required>
 
-            <label for="empresa">Empresa (se aplicável):</label>
-            <input type="text" id="empresa" name="empresa">
-
-            <label for="visitado">Quem vai visitar / Setor:</label>
-            <input type="text" id="visitado" name="visitado" required>
-
-            <h3>Controle de Entrega</h3>
-            <label for="numero_nf">Número da Nota Fiscal:</label>
-            <input type="text" id="numero_nf" name="numero_nf">
-
-            <label for="entregador">Nome do Entregador:</label>
-            <input type="text" id="entregador" name="entregador">
-
-            <label for="empresa_entrega">Nome da Empresa (Entregadora):</label>
+            <label for="empresa_entrega">Empresa (Entregadora):</label>
             <input type="text" id="empresa_entrega" name="empresa_entrega">
 
             <label for="placa_carro">Placa do Carro:</label>
             <input type="text" id="placa_carro" name="placa_carro">
 
-            <button type="submit" class="btn-salvar">Salvar Registro</button>
+            <label for="modelo_carro">Modelo do Carro:</label>
+            <input type="text" id="modelo_carro" name="modelo_carro">
+
+            <label for="numero_nf">Número da Nota Fiscal:</label>
+            <input type="text" id="numero_nf" name="numero_nf">
+
+            <button type="submit" class="btn-acao">Salvar Registro</button>
         </form>
     </div>
 
     <div class="container">
-        <h3>Relatório de Pessoas no Interior da Empresa</h3>
+        <h3>Entregas em Andamento</h3>
         <table id="tabelaRelatorio">
             <thead>
                 <tr>
-                    <th>Nome</th>
-                    <th>CPF</th>
-                    <th>Visitado</th>
+                    <th>Entregador</th>
+                    <th>Placa</th>
+                    <th>Nota Fiscal</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Os registros cadastrados aparecerão aqui -->
+                <!-- As entregas salvas aparecerão aqui -->
             </tbody>
         </table>
     </div>
 
     <script>
         const form = document.getElementById('formPortaria');
+        const btnBuscar = document.getElementById('btnBuscar');
         const tabelaRelatorio = document.getElementById('tabelaRelatorio').querySelector('tbody');
 
         function atualizarTabela() {
             tabelaRelatorio.innerHTML = '';
-            const registros = JSON.parse(localStorage.getItem('registrosVicon') || '[]');
+            const registros = JSON.parse(localStorage.getItem('entregasVicon') || '[]');
             registros.forEach(registro => {
                 const linha = document.createElement('tr');
                 linha.innerHTML = `
-                    <td>${registro.nome}</td>
-                    <td>${registro.cpf}</td>
-                    <td>${registro.visitado}</td>
+                    <td>${registro.entregador}</td>
+                    <td>${registro.placa_carro}</td>
+                    <td>${registro.numero_nf}</td>
                 `;
                 tabelaRelatorio.appendChild(linha);
             });
@@ -158,18 +101,41 @@
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const novoRegistro = {
-                nome: document.getElementById('nome').value,
+            const novaEntrega = {
+                entregador: document.getElementById('entregador').value,
                 cpf: document.getElementById('cpf').value.trim(),
-                visitado: document.getElementById('visitado').value
+                empresa_entrega: document.getElementById('empresa_entrega').value,
+                placa_carro: document.getElementById('placa_carro').value,
+                modelo_carro: document.getElementById('modelo_carro').value,
+                numero_nf: document.getElementById('numero_nf').value
             };
 
-            let registros = JSON.parse(localStorage.getItem('registrosVicon') || '[]');
-            registros.push(novoRegistro);
-            localStorage.setItem('registrosVicon', JSON.stringify(registros));
+            let registros = JSON.parse(localStorage.getItem('entregasVicon') || '[]');
+            registros.push(novaEntrega);
+            localStorage.setItem('entregasVicon', JSON.stringify(registros));
 
             form.reset();
             atualizarTabela();
+        });
+
+        btnBuscar.addEventListener('click', function() {
+            const termoBusca = document.getElementById('busca').value.trim().toLowerCase();
+            if (!termoBusca) {
+                alert('Digite um nome ou placa para buscar.');
+                return;
+            }
+
+            const registros = JSON.parse(localStorage.getItem('entregasVicon') || '[]');
+            const resultado = registros.find(r => 
+                r.entregador.toLowerCase().includes(termoBusca) || 
+                r.placa_carro.toLowerCase().includes(termoBusca)
+            );
+
+            if (resultado) {
+                alert('Entrega encontrada:\n\nEntregador: ' + resultado.entregador + '\nPlaca: ' + resultado.placa_carro + '\nNota Fiscal: ' + resultado.numero_nf);
+            } else {
+                alert('Nenhum registro encontrado para: ' + termoBusca);
+            }
         });
 
         atualizarTabela();
