@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Vicon 2026</title>
+    <title>Sistema Vicon Logística 2026</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
@@ -14,81 +14,79 @@
         #video { width: 100%; height: 250px; background: #000; display: none; margin-bottom: 10px; border-radius: 8px; }
         textarea { width: 100%; height: 80px; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         
-        /* Modal e Assinatura */
+        /* Assinatura */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; justify-content:center; align-items:center; }
         .modal-content { background:#fff; padding:20px; border-radius:10px; width:90%; max-width:400px; text-align:center; }
-        canvas { 
-            border: 2px solid #333; 
-            width: 100%; 
-            height: 200px; 
-            background: #fff; 
-            touch-action: none; /* EVITA ROLAGEM DA TELA AO ASSINAR */
-        }
+        canvas { border: 2px solid #333; width: 100%; height: 200px; background: #fff; touch-action: none; }
+        
+        /* Relatórios */
+        .relatorio-box { font-size: 14px; text-align: left; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h3>📦 Recebimento</h3>
+    <h3>📦 Recebimento Inteligente</h3>
     <div id="camera-zone"></div>
     <video id="video" autoplay playsinline></video>
-    
     <button class="btn" style="background:#3498db" onclick="iniciarLeitura()">📷 Ler QR / Barras</button>
-    <button class="btn" style="background:#27ae60" onclick="iniciarOCR()">📄 Leitura OCR</button>
+    <button class="btn" style="background:#27ae60" onclick="iniciarOCR()">📄 OCR (Texto)</button>
     <textarea id="resultado" placeholder="Dados da etiqueta..."></textarea>
     <button class="btn" style="background:#2c3e50" onclick="salvarEncomenda()">💾 Salvar no Estoque</button>
 </div>
 
 <div class="container">
-    <h3>📤 Dar Saída</h3>
+    <h3>📤 Dar Saída / Baixa</h3>
     <button class="btn" style="background:#e67e22" onclick="iniciarLeituraSaida()">📷 Escanear para Baixa</button>
+</div>
+
+<div class="container">
+    <h3>📊 Relatórios de Gestão</h3>
+    <input type="date" id="dataInicio" onchange="gerarRelatorio()">
+    <input type="date" id="dataFim" onchange="gerarRelatorio()">
+    <div class="relatorio-box">
+        <p>Entregues: <strong id="totalEntregue">0</strong> | Pendentes: <strong id="totalPendente">0</strong></p>
+        <div id="listaRelatorio"></div>
+    </div>
 </div>
 
 <div id="modalAssinatura" class="modal">
     <div class="modal-content">
-        <h4>Assine a Entrega</h4>
+        <h4>Assinatura de Retirada</h4>
         <canvas id="canvasSig"></canvas>
-        <button class="btn" style="background:#27ae60; margin-top:15px;" onclick="confirmarBaixa()">Confirmar</button>
+        <button class="btn" style="background:#27ae60; margin-top:10px;" onclick="confirmarBaixa()">Confirmar Entrega</button>
         <button class="btn" style="background:#7f8c8d" onclick="fecharModal()">Cancelar</button>
     </div>
 </div>
 
 <script>
-    const cameraZone = document.getElementById('camera-zone');
-    const video = document.getElementById('video');
-    const resultado = document.getElementById('resultado');
-    const canvasSig = document.getElementById('canvasSig');
-    const ctxSig = canvasSig.getContext('2d');
-    let indiceEncontrado = null;
-    let desenhando = false;
+    const cameraZone = document.getElementById('camera-zone'), video = document.getElementById('video'), resultado = document.getElementById('resultado');
+    const canvasSig = document.getElementById('canvasSig'), ctxSig = canvasSig.getContext('2d');
+    let indiceEncontrado = null, desenhando = false;
 
-    // --- LOGICA DE ASSINATURA (CORRIGIDA) ---
+    // --- ASSINATURA ---
     function desenhar(e) {
         if (!desenhando) return;
         e.preventDefault();
         const rect = canvasSig.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        ctxSig.lineWidth = 3;
-        ctxSig.lineCap = 'round';
+        ctxSig.lineWidth = 3; ctxSig.lineCap = 'round';
         ctxSig.lineTo(clientX - rect.left, clientY - rect.top);
         ctxSig.stroke();
     }
-
     canvasSig.onmousedown = (e) => { desenhando = true; ctxSig.beginPath(); };
-    canvasSig.onmouseup = () => { desenhando = false; };
+    canvasSig.onmouseup = () => desenhando = false;
     canvasSig.onmousemove = desenhar;
     canvasSig.ontouchstart = (e) => { desenhando = true; ctxSig.beginPath(); };
-    canvasSig.ontouchend = () => { desenhando = false; };
+    canvasSig.ontouchend = () => desenhando = false;
     canvasSig.ontouchmove = desenhar;
 
-    // --- FUNCOES DE SCANNER ---
+    // --- OPERAÇÕES ---
     function iniciarLeitura() {
         cameraZone.style.display = 'block';
         const scanner = new Html5Qrcode("camera-zone");
-        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, 
-            (decodedText) => { scanner.stop(); cameraZone.style.display = 'none'; resultado.value = decodedText; }
-        );
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, (t) => { scanner.stop(); cameraZone.style.display = 'none'; resultado.value = t; });
     }
 
     async function iniciarOCR() {
@@ -111,27 +109,20 @@
         let lista = JSON.parse(localStorage.getItem('encomendas_vicon') || '[]');
         lista.push({ codigo: resultado.value.trim(), status: 'Aguardando', data: new Date().toLocaleString() });
         localStorage.setItem('encomendas_vicon', JSON.stringify(lista));
-        alert("Salvo com sucesso!");
-        resultado.value = "";
+        alert("Salvo!"); resultado.value = ""; gerarRelatorio();
     }
 
     function iniciarLeituraSaida() {
         cameraZone.style.display = 'block';
         const scanner = new Html5Qrcode("camera-zone");
-        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, 
-            (decodedText) => { scanner.stop(); cameraZone.style.display = 'none'; localizarEncomenda(decodedText); }
-        );
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, (t) => { scanner.stop(); cameraZone.style.display = 'none'; localizarEncomenda(t); });
     }
 
     function localizarEncomenda(codigo) {
         let lista = JSON.parse(localStorage.getItem('encomendas_vicon') || '[]');
         let index = lista.findIndex(e => e.codigo.trim() === codigo.trim() && e.status === 'Aguardando');
-        if (index !== -1) {
-            indiceEncontrado = index;
-            document.getElementById('modalAssinatura').style.display = 'flex';
-        } else {
-            alert("Encomenda não encontrada ou já entregue.");
-        }
+        if (index !== -1) { indiceEncontrado = index; document.getElementById('modalAssinatura').style.display = 'flex'; }
+        else alert("Item não encontrado!");
     }
 
     function confirmarBaixa() {
@@ -139,14 +130,24 @@
         lista[indiceEncontrado].status = 'Entregue';
         lista[indiceEncontrado].assinatura = canvasSig.toDataURL();
         localStorage.setItem('encomendas_vicon', JSON.stringify(lista));
-        alert("Baixa confirmada!");
-        location.reload();
+        alert("Baixa confirmada!"); fecharModal(); gerarRelatorio();
     }
 
-    function fecharModal() { 
-        document.getElementById('modalAssinatura').style.display = 'none'; 
-        ctxSig.clearRect(0, 0, canvasSig.width, canvasSig.height);
+    function gerarRelatorio() {
+        let lista = JSON.parse(localStorage.getItem('encomendas_vicon') || '[]');
+        let dI = document.getElementById('dataInicio').value, dF = document.getElementById('dataFim').value;
+        let filtrados = lista.filter(item => {
+            let dataItem = item.data.split(' ')[0].split('/').reverse().join('-');
+            if(dI && dF) return dataItem >= dI && dataItem <= dF;
+            return true;
+        });
+        document.getElementById('totalEntregue').innerText = filtrados.filter(i => i.status === 'Entregue').length;
+        document.getElementById('totalPendente').innerText = filtrados.filter(i => i.status === 'Aguardando').length;
+        document.getElementById('listaRelatorio').innerHTML = filtrados.map(i => `<div><b>${i.codigo}</b>: ${i.status}</div>`).join('');
     }
+
+    function fecharModal() { document.getElementById('modalAssinatura').style.display = 'none'; ctxSig.clearRect(0,0,canvasSig.width,canvasSig.height); }
+    window.onload = gerarRelatorio;
 </script>
 </body>
 </html>
