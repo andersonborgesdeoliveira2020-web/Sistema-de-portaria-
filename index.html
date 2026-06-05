@@ -10,17 +10,14 @@
         body { font-family: sans-serif; background: #f4f6f9; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
         .container { background: #fff; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: #fff; margin-bottom: 10px; font-size: 16px; }
-        #camera-zone { width: 100%; height: 250px; background: #000; display: none; margin-bottom: 10px; border-radius: 8px; }
-        #video { width: 100%; height: 250px; background: #000; display: none; margin-bottom: 10px; border-radius: 8px; }
+        #camera-zone, #video { width: 100%; height: 250px; background: #000; display: none; margin-bottom: 10px; border-radius: 8px; }
         textarea { width: 100%; height: 80px; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         
-        /* Assinatura */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; justify-content:center; align-items:center; }
         .modal-content { background:#fff; padding:20px; border-radius:10px; width:90%; max-width:400px; text-align:center; }
-        canvas { border: 2px solid #333; width: 100%; height: 200px; background: #fff; touch-action: none; }
-        
-        /* Relatórios */
+        canvas { border: 2px solid #333; width: 100%; height: 200px; background: #fff; touch-action: none; cursor: crosshair; }
         .relatorio-box { font-size: 14px; text-align: left; margin-top: 10px; }
+        .status-msg { color: #3498db; font-weight: bold; display: none; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -29,6 +26,7 @@
     <h3>📦 Recebimento Inteligente</h3>
     <div id="camera-zone"></div>
     <video id="video" autoplay playsinline></video>
+    <div id="statusOCR" class="status-msg">Processando leitura...</div>
     <button class="btn" style="background:#3498db" onclick="iniciarLeitura()">📷 Ler QR / Barras</button>
     <button class="btn" style="background:#27ae60" onclick="iniciarOCR()">📄 OCR (Texto)</button>
     <textarea id="resultado" placeholder="Dados da etiqueta..."></textarea>
@@ -61,7 +59,7 @@
 
 <script>
     const cameraZone = document.getElementById('camera-zone'), video = document.getElementById('video'), resultado = document.getElementById('resultado');
-    const canvasSig = document.getElementById('canvasSig'), ctxSig = canvasSig.getContext('2d');
+    const canvasSig = document.getElementById('canvasSig'), ctxSig = canvasSig.getContext('2d'), statusOCR = document.getElementById('statusOCR');
     let indiceEncontrado = null, desenhando = false;
 
     // --- ASSINATURA ---
@@ -75,10 +73,10 @@
         ctxSig.lineTo(clientX - rect.left, clientY - rect.top);
         ctxSig.stroke();
     }
-    canvasSig.onmousedown = (e) => { desenhando = true; ctxSig.beginPath(); };
+    canvasSig.onmousedown = () => { desenhando = true; ctxSig.beginPath(); };
     canvasSig.onmouseup = () => desenhando = false;
     canvasSig.onmousemove = desenhar;
-    canvasSig.ontouchstart = (e) => { desenhando = true; ctxSig.beginPath(); };
+    canvasSig.ontouchstart = () => { desenhando = true; ctxSig.beginPath(); };
     canvasSig.ontouchend = () => desenhando = false;
     canvasSig.ontouchmove = desenhar;
 
@@ -91,25 +89,29 @@
 
     async function iniciarOCR() {
         video.style.display = 'block';
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        video.srcObject = stream;
-        setTimeout(async () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            const { data: { text } } = await Tesseract.recognize(canvas.toDataURL(), 'por');
-            resultado.value = text;
-            video.style.display = 'none';
-            stream.getTracks().forEach(t => t.stop());
-        }, 2000);
+        statusOCR.style.display = 'block';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
+            setTimeout(async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const { data: { text } } = await Tesseract.recognize(canvas, 'por');
+                resultado.value = text.trim();
+                video.style.display = 'none';
+                statusOCR.style.display = 'none';
+                stream.getTracks().forEach(t => t.stop());
+            }, 2500);
+        } catch (err) { alert("Erro ao acessar câmera: " + err); statusOCR.style.display = 'none'; }
     }
 
     function salvarEncomenda() {
         if(!resultado.value) return alert("Nada para salvar!");
         let lista = JSON.parse(localStorage.getItem('encomendas_vicon') || '[]');
-        lista.push({ codigo: resultado.value.trim(), status: 'Aguardando', data: new Date().toLocaleString() });
+        lista.push({ codigo: resultado.value.trim(), status: 'Aguardando', data: new Date().toISOString().split('T')[0] });
         localStorage.setItem('encomendas_vicon', JSON.stringify(lista));
-        alert("Salvo!"); resultado.value = ""; gerarRelatorio();
+        alert("Salvo com sucesso!"); resultado.value = ""; gerarRelatorio();
     }
 
     function iniciarLeituraSaida() {
@@ -122,7 +124,7 @@
         let lista = JSON.parse(localStorage.getItem('encomendas_vicon') || '[]');
         let index = lista.findIndex(e => e.codigo.trim() === codigo.trim() && e.status === 'Aguardando');
         if (index !== -1) { indiceEncontrado = index; document.getElementById('modalAssinatura').style.display = 'flex'; }
-        else alert("Item não encontrado!");
+        else alert("Item não encontrado ou já entregue!");
     }
 
     function confirmarBaixa() {
@@ -137,13 +139,12 @@
         let lista = JSON.parse(localStorage.getItem('encomendas_vicon') || '[]');
         let dI = document.getElementById('dataInicio').value, dF = document.getElementById('dataFim').value;
         let filtrados = lista.filter(item => {
-            let dataItem = item.data.split(' ')[0].split('/').reverse().join('-');
-            if(dI && dF) return dataItem >= dI && dataItem <= dF;
+            if(dI && dF) return item.data >= dI && item.data <= dF;
             return true;
         });
         document.getElementById('totalEntregue').innerText = filtrados.filter(i => i.status === 'Entregue').length;
         document.getElementById('totalPendente').innerText = filtrados.filter(i => i.status === 'Aguardando').length;
-        document.getElementById('listaRelatorio').innerHTML = filtrados.map(i => `<div><b>${i.codigo}</b>: ${i.status}</div>`).join('');
+        document.getElementById('listaRelatorio').innerHTML = filtrados.map(i => `<div><b>${i.codigo}</b> (${i.data}): ${i.status}</div>`).join('');
     }
 
     function fecharModal() { document.getElementById('modalAssinatura').style.display = 'none'; ctxSig.clearRect(0,0,canvasSig.width,canvasSig.height); }
