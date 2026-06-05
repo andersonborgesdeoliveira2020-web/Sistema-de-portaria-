@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <title>Coletor Logístico</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #2c3e50; text-align: center; font-family: sans-serif; }
+        canvas { background: #ecf0f1; display: block; margin: 0 auto; touch-action: none; }
+    </style>
+</head>
+<body>
+    <h2 style="color: white;">Score: <span id="score">0</span></h2>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<script>
+    // Registro do Service Worker para funcionar offline
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let score = 0;
+    let boxes = [{x: 100, y: 0, speed: 3}];
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        boxes.forEach((b, index) => {
+            b.y += b.speed;
+            ctx.fillStyle = "#e67e22";
+            ctx.fillRect(b.x, b.y, 60, 60);
+            if(b.y > canvas.height) { alert("Game Over! Score: " + score); location.reload(); }
+        });
+        requestAnimationFrame(draw);
+    }
+
+    // Suporte para Mouse e Touch
+    canvas.addEventListener('pointerdown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        boxes.forEach((b, index) => {
+            if(mx > b.x && mx < b.x + 60 && my > b.y && my < b.y + 60) {
+                boxes.splice(index, 1);
+                score++;
+                document.getElementById('score').innerText = score;
+                boxes.push({x: Math.random() * 320, y: 0, speed: 3 + (score * 0.2)});
+            }
+        });
+    });
+    draw();
+</script>
+</body>
+</html>
